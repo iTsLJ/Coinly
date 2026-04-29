@@ -1,0 +1,182 @@
+﻿Histórias de usuário (HU) Coinly
+
+
+
+
+ALUNO        
+
+
+
+
+HU-01 · Cadastro de aluno
+───────────────────────────────────
+Como aluno,
+quero me cadastrar no sistema informando meus dados pessoais e instituição,
+para poder participar do programa de mérito estudantil.
+
+
+Critérios de aceitação:
+  [✓] Campos obrigatórios: nome, email, CPF, RG, endereço, curso
+  [✓] Instituição de ensino selecionada de lista pré-cadastrada no sistema
+  [✓] Email e CPF devem ser únicos no sistema
+  [✓] CPF deve ser validado (formato e dígitos verificadores)
+  [✓] Após o cadastro, login e senha são gerados para acesso ao sistema
+
+
+
+
+HU-02 · Consultar extrato (aluno)
+───────────────────────────────────
+Como aluno,
+quero visualizar meu extrato de moedas,
+para acompanhar meu saldo atual e o histórico de transações.
+
+
+Critérios de aceitação:
+  [✓] Exibir saldo atual de moedas disponíveis
+  [✓] Listar transações de recebimento: professor remetente, quantidade, motivo e data
+  [✓] Listar transações de resgate: vantagem escolhida, custo descontado e data
+  [✓] Ordenação cronológica decrescente (mais recente primeiro)
+
+
+
+
+HU-03 · Resgatar vantagem (trocar moedas)
+───────────────────────────────────────────
+Como aluno,
+quero trocar minhas moedas por uma vantagem cadastrada por uma empresa parceira,
+para usufruir de descontos e benefícios oferecidos pelo programa.
+
+
+Critérios de aceitação:
+  [✓] Listar vantagens disponíveis com nome, descrição, foto e custo em moedas
+  [✓] Sistema impede resgate caso o saldo seja insuficiente
+  [✓] Ao confirmar, o custo é descontado do saldo do aluno
+  [✓] Um código único de cupom é gerado pelo sistema
+  [✓] Email com o cupom é enviado ao aluno
+  [✓] Email com o mesmo código é enviado à empresa parceira para conferência
+
+
+
+
+HU-04 · Receber moedas
+────────────────────────
+Como aluno,
+quero ser notificado quando um professor me enviar moedas,
+para saber que fui reconhecido e acompanhar meu saldo atualizado.
+
+
+Critérios de aceitação:
+  [✓] Saldo do aluno é incrementado imediatamente após o envio do professor
+  [✓] Aluno recebe notificação por email com quantidade recebida e mensagem do professor
+  [✓] Transação aparece no extrato do aluno
+
+
+
+
+        PROFESSOR
+
+
+
+
+HU-05 · Enviar moedas ao aluno
+────────────────────────────────
+Como professor,
+quero enviar moedas a um aluno com uma mensagem de reconhecimento,
+para recompensar bom desempenho, participação e comportamento em aula.
+
+
+Critérios de aceitação:
+  [✓] Selecionar aluno destinatário da lista de alunos
+  [✓] Informar a quantidade de moedas a enviar
+  [✓] Mensagem de motivo é obrigatória (campo aberto)
+  [✓] Sistema verifica se o professor possui saldo suficiente antes de confirmar
+  [✓] Caso o saldo seja insuficiente, o envio é bloqueado com mensagem de erro
+  [✓] Transação registrada no extrato do professor e do aluno
+  [✓] Aluno é notificado por email automaticamente
+
+
+
+
+HU-06 · Consultar extrato (professor)
+───────────────────────────────────────
+Como professor,
+quero visualizar meu extrato de distribuição de moedas,
+para controlar quantas moedas já distribui e qual meu saldo restante no semestre.
+
+
+Critérios de aceitação:
+  [✓] Exibir saldo atual (acumulado entre semestres)
+  [✓] Listar envios realizados: aluno destinatário, quantidade, motivo e data
+  [✓] Exibir histórico de recargas semestrais recebidas
+
+
+
+
+        EMPRESA PARCEIRA
+
+
+
+
+HU-07 · Cadastro de empresa parceira
+──────────────────────────────────────
+Como empresa parceira,
+quero me cadastrar no sistema,
+para poder oferecer vantagens aos alunos participantes do programa.
+
+
+Critérios de aceitação:
+  [✓] Campos obrigatórios: nome fantasia, CNPJ, email de contato
+  [✓] Login e senha gerados para acesso ao painel da empresa
+  [✓] Após o cadastro, a empresa pode gerenciar suas vantagens
+
+
+
+
+HU-08 · Cadastrar vantagem
+────────────────────────────
+Como empresa parceira,
+quero cadastrar vantagens com descrição, foto e custo em moedas,
+para que os alunos possam visualizá-las e resgatá-las pelo sistema.
+
+
+Critérios de aceitação:
+  [✓] Campos obrigatórios: nome, descrição, foto (upload de imagem) e custo em moedas
+  [✓] Vantagem fica visível na listagem de resgate assim que cadastrada
+  [✓] Empresa pode editar ou remover suas próprias vantagens
+
+
+
+
+SISTEMA
+
+
+
+
+HU-09 · Autenticação de usuários
+──────────────────────────────────
+Como sistema,
+quero exigir autenticação (login e senha) para qualquer operação,
+para garantir a segurança e integridade dos dados de todos os perfis.
+
+
+Critérios de aceitação:
+  [✓] Todos os perfis (aluno, professor, empresa) precisam autenticar para acessar
+  [✓] Sessão expira após período de inatividade
+  [✓] Senhas armazenadas com hash seguro (ex.: BCrypt)
+  [✓] Tentativas de acesso sem autenticação são redirecionadas para login
+
+
+
+
+HU-10 · Recarga semestral de moedas
+──────────────────────────────────────
+Como sistema,
+quero adicionar automaticamente 1.000 moedas ao saldo de cada professor a cada semestre,
+para garantir a renovação contínua do programa sem intervenção manual.
+
+
+Critérios de aceitação:
+  [✓] Executado automaticamente no início de cada semestre letivo
+  [✓] Saldo é acumulativo: as 1.000 novas moedas somam-se ao saldo restante anterior
+  [✓] A recarga é registrada no extrato do professor como transação de entrada
