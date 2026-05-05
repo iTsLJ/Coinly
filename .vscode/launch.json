@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CoinlyApi (dev - Mailpit)",
+            "request": "launch",
+            "mainClass": "com.coinly.api.CoinlyApiApplication",
+            "projectName": "coinly-api"
+        },
+        {
+            "type": "java",
+            "name": "CoinlyApi (prod - SendGrid)",
+            "request": "launch",
+            "mainClass": "com.coinly.api.CoinlyApiApplication",
+            "projectName": "coinly-api",
+            "envFile": "${workspaceFolder}/coinly-api/.env",
+            "vmArgs": "-Dspring.profiles.active=prod"
+        }
+    ]
+}

@@ -14,8 +14,18 @@ spring:
         format_sql: true
     open-in-view: false
   mail:
-    host: ${MAIL_HOST:localhost}
-    port: ${MAIL_PORT:1025}
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+coinly:
+  mail:
+    from: noreply@coinly.local
 
 server:
   port: 8080
