@@ -9,6 +9,8 @@ type CadastroProps = {
   onBackToLogin?: () => void
 }
 
+type TipoCadastro = 'aluno' | 'empresa'
+
 type Form = {
   nome: string
   email: string
@@ -19,7 +21,14 @@ type Form = {
   instituicaoId: string
 }
 
+type EmpresaForm = {
+  nomeFantasia: string
+  cnpj: string
+  email: string
+}
+
 type Errors = Partial<Record<keyof Form, string>>
+type EmpresaErrors = Partial<Record<keyof EmpresaForm, string>>
 
 const INITIAL: Form = {
   nome: '',
@@ -31,12 +40,27 @@ const INITIAL: Form = {
   instituicaoId: '',
 }
 
+const INITIAL_EMPRESA: EmpresaForm = {
+  nomeFantasia: '',
+  cnpj: '',
+  email: '',
+}
+
 function maskCpf(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11)
   return digits
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
+
+function maskCnpj(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 14)
+  return digits
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
 }
 
 function isValidCpf(cpf: string): boolean {
@@ -59,9 +83,40 @@ function isValidCpf(cpf: string): boolean {
   return d2 === parseInt(digits[10], 10)
 }
 
+function isValidCnpj(cnpj: string): boolean {
+  const digits = cnpj.replace(/\D/g, '')
+  if (digits.length !== 14) return false
+  if (/^(\d)\1{13}$/.test(digits)) return false
+
+  const calc = (slice: string, factors: number[]) => {
+    let sum = 0
+    for (let i = 0; i < slice.length; i++) {
+      sum += parseInt(slice[i], 10) * factors[i]
+    }
+    const rest = sum % 11
+    return rest < 2 ? 0 : 11 - rest
+  }
+
+  const factors1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+  const factors2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+  const d1 = calc(digits.slice(0, 12), factors1)
+  if (d1 !== parseInt(digits[12], 10)) return false
+  const d2 = calc(digits.slice(0, 13), factors2)
+  return d2 === parseInt(digits[13], 10)
+}
+
 function Cadastro({ onBackToLogin }: CadastroProps) {
+  const [tipo, setTipo] = useState<TipoCadastro>('aluno')
+
+  // estado do form de aluno
   const [form, setForm] = useState<Form>(INITIAL)
   const [errors, setErrors] = useState<Errors>({})
+
+  // estado do form de empresa
+  const [empresaForm, setEmpresaForm] = useState<EmpresaForm>(INITIAL_EMPRESA)
+  const [empresaErrors, setEmpresaErrors] = useState<EmpresaErrors>({})
+
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
@@ -101,6 +156,20 @@ function Cadastro({ onBackToLogin }: CadastroProps) {
     if (serverError) setServerError(null)
   }
 
+  const updateEmpresa = <K extends keyof EmpresaForm>(key: K, value: EmpresaForm[K]) => {
+    setEmpresaForm((prev) => ({ ...prev, [key]: value }))
+    if (empresaErrors[key]) setEmpresaErrors((prev) => ({ ...prev, [key]: undefined }))
+    if (serverError) setServerError(null)
+  }
+
+  const handleChangeTipo = (novoTipo: TipoCadastro) => {
+    if (novoTipo === tipo || loading) return
+    setTipo(novoTipo)
+    setErrors({})
+    setEmpresaErrors({})
+    setServerError(null)
+  }
+
   const validate = (): Errors => {
     const next: Errors = {}
     if (!form.nome.trim()) next.nome = 'Informe seu nome'
@@ -119,6 +188,20 @@ function Cadastro({ onBackToLogin }: CadastroProps) {
     if (!form.curso.trim()) next.curso = 'Informe seu curso'
 
     if (!form.instituicaoId) next.instituicaoId = 'Selecione sua instituição'
+
+    return next
+  }
+
+  const validateEmpresa = (): EmpresaErrors => {
+    const next: EmpresaErrors = {}
+    if (!empresaForm.nomeFantasia.trim()) next.nomeFantasia = 'Informe o nome fantasia'
+    else if (empresaForm.nomeFantasia.trim().length < 3) next.nomeFantasia = 'Nome muito curto'
+
+    if (!empresaForm.cnpj.trim()) next.cnpj = 'Informe o CNPJ'
+    else if (!isValidCnpj(empresaForm.cnpj)) next.cnpj = 'CNPJ inválido'
+
+    if (!empresaForm.email.trim()) next.email = 'Informe o e-mail'
+    else if (!/^\S+@\S+\.\S+$/.test(empresaForm.email)) next.email = 'E-mail inválido'
 
     return next
   }
@@ -170,6 +253,49 @@ function Cadastro({ onBackToLogin }: CadastroProps) {
     }
   }
 
+  const handleSubmitEmpresa = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setServerError(null)
+    setSuccess(null)
+
+    const nextErrors = validateEmpresa()
+    setEmpresaErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) return
+
+    setLoading(true)
+    try {
+      await coinlyApi.createEmpresa({
+        nomeFantasia: empresaForm.nomeFantasia.trim(),
+        cnpj: empresaForm.cnpj.replace(/\D/g, ''),
+        email: empresaForm.email.trim().toLowerCase(),
+      })
+      setSuccess(empresaForm.email.trim().toLowerCase())
+    } catch (err) {
+      if (err instanceof HttpError) {
+        const msg = err.payload.message ?? 'Erro ao realizar cadastro.'
+        if (/email/i.test(msg)) setEmpresaErrors((p) => ({ ...p, email: msg }))
+        else if (/cnpj/i.test(msg)) setEmpresaErrors((p) => ({ ...p, cnpj: msg }))
+        else setServerError(msg)
+        if (err.payload.details?.length) {
+          const fieldErrors: EmpresaErrors = {}
+          for (const detail of err.payload.details) {
+            const [rawField, ...rest] = detail.split(':')
+            const field = rawField?.trim() as keyof EmpresaForm | undefined
+            const message = rest.join(':').trim() || detail
+            if (field && field in INITIAL_EMPRESA) fieldErrors[field] = message
+          }
+          if (Object.keys(fieldErrors).length) {
+            setEmpresaErrors((p) => ({ ...p, ...fieldErrors }))
+          }
+        }
+      } else {
+        setServerError('Não foi possível conectar ao servidor. Tente novamente.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (success) {
     return (
       <div className="auth-shell">
@@ -198,14 +324,16 @@ function Cadastro({ onBackToLogin }: CadastroProps) {
               </div>
               <h2 className="cadastro-success__title">Cadastro realizado!</h2>
               <p className="cadastro-success__text">
-                Enviamos suas credenciais de acesso para
+                {tipo === 'aluno'
+                  ? 'Enviamos suas credenciais de acesso para'
+                  : 'Cadastro recebido! Enviamos as credenciais de acesso para'}
                 <br />
                 <strong>{success}</strong>
               </p>
               <p className="cadastro-success__hint">
-                Verifique sua caixa de entrada (e a pasta de spam). A senha
-                provisória chega em instantes — recomendamos trocá-la no
-                primeiro acesso.
+                {tipo === 'aluno'
+                  ? 'Verifique sua caixa de entrada (e a pasta de spam). A senha provisória chega em instantes — recomendamos trocá-la no primeiro acesso.'
+                  : 'O cadastro da sua empresa ficará com status "pendente" até a aprovação da equipe Coinly. Verifique sua caixa de entrada para a senha provisória.'}
               </p>
               <button
                 type="button"
@@ -257,72 +385,351 @@ function Cadastro({ onBackToLogin }: CadastroProps) {
             Voltar ao login
           </button>
 
+          {/* Toggle Aluno / Empresa */}
+          <div className="cadastro-toggle" role="tablist" aria-label="Tipo de cadastro">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tipo === 'aluno'}
+              className={`cadastro-toggle__btn ${tipo === 'aluno' ? 'is-active' : ''}`}
+              onClick={() => handleChangeTipo('aluno')}
+              disabled={loading}
+            >
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.31 0-8 1.66-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3.34-4.69-5-8-5z"
+                  fill="currentColor"
+                />
+              </svg>
+              Sou aluno
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tipo === 'empresa'}
+              className={`cadastro-toggle__btn ${tipo === 'empresa' ? 'is-active' : ''}`}
+              onClick={() => handleChangeTipo('empresa')}
+              disabled={loading}
+            >
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M3 21V7l9-4 9 4v14h-6v-6h-6v6H3zm6-9h2v-2H9v2zm4 0h2v-2h-2v2zm-4-4h2V6H9v2zm4 0h2V6h-2v2z"
+                  fill="currentColor"
+                />
+              </svg>
+              Sou empresa
+            </button>
+          </div>
+
           <div className="auth-card__header">
             <span className="auth-card__badge">Criar conta</span>
-            <h2 className="auth-card__title">Cadastro de aluno</h2>
+            <h2 className="auth-card__title">
+              {tipo === 'aluno' ? 'Cadastro de aluno' : 'Cadastro de empresa parceira'}
+            </h2>
             <p className="auth-card__subtitle">
-              Preencha seus dados para começar a acumular Coinlys. Você
-              receberá uma senha provisória no e-mail cadastrado.
+              {tipo === 'aluno'
+                ? 'Preencha seus dados para começar a acumular Coinlys. Você receberá uma senha provisória no e-mail cadastrado.'
+                : 'Preencha os dados da sua empresa para se tornar uma parceira. Após a aprovação você poderá oferecer vantagens aos alunos.'}
             </p>
           </div>
 
-          <form className="auth-form cadastro-form" onSubmit={handleSubmit} noValidate>
-            <fieldset className="cadastro-section">
-              <legend>Dados pessoais</legend>
+          {tipo === 'aluno' ? (
+            <form className="auth-form cadastro-form" onSubmit={handleSubmit} noValidate>
+              <fieldset className="cadastro-section">
+                <legend>Dados pessoais</legend>
 
-              <div className={`auth-field ${errors.nome ? 'is-invalid' : ''}`}>
-                <label htmlFor="nome">Nome completo</label>
-                <div className="auth-input">
-                  <span className="auth-input__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.31 0-8 1.66-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3.34-4.69-5-8-5z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </span>
-                  <input
-                    id="nome"
-                    type="text"
-                    placeholder="Maria da Silva"
-                    autoComplete="name"
-                    value={form.nome}
-                    onChange={(e) => update('nome', e.target.value)}
-                    disabled={loading}
-                    maxLength={120}
-                  />
+                <div className={`auth-field ${errors.nome ? 'is-invalid' : ''}`}>
+                  <label htmlFor="nome">Nome completo</label>
+                  <div className="auth-input">
+                    <span className="auth-input__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.31 0-8 1.66-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-3.34-4.69-5-8-5z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      id="nome"
+                      type="text"
+                      placeholder="Maria da Silva"
+                      autoComplete="name"
+                      value={form.nome}
+                      onChange={(e) => update('nome', e.target.value)}
+                      disabled={loading}
+                      maxLength={120}
+                    />
+                  </div>
+                  {errors.nome && <span className="auth-field__error">{errors.nome}</span>}
                 </div>
-                {errors.nome && <span className="auth-field__error">{errors.nome}</span>}
+
+                <div className={`auth-field ${errors.email ? 'is-invalid' : ''}`}>
+                  <label htmlFor="email">E-mail</label>
+                  <div className="auth-input">
+                    <span className="auth-input__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V8H4zm16 2.6-7.45 4.66a1 1 0 0 1-1.1 0L4 10.6V16h16v-5.4z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="voce@email.com"
+                      value={form.email}
+                      onChange={(e) => update('email', e.target.value)}
+                      disabled={loading}
+                      maxLength={160}
+                    />
+                  </div>
+                  {errors.email && <span className="auth-field__error">{errors.email}</span>}
+                </div>
+
+                <div className="cadastro-grid">
+                  <div className={`auth-field ${errors.cpf ? 'is-invalid' : ''}`}>
+                    <label htmlFor="cpf">CPF</label>
+                    <div className="auth-input">
+                      <span className="auth-input__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm5 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3.5 8h7c0-1.93-1.57-3.5-3.5-3.5S5.5 15.07 5.5 17zM14 9h6v2h-6V9zm0 4h6v2h-6v-2z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </span>
+                      <input
+                        id="cpf"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="000.000.000-00"
+                        value={form.cpf}
+                        onChange={(e) => update('cpf', maskCpf(e.target.value))}
+                        disabled={loading}
+                        maxLength={14}
+                      />
+                    </div>
+                    {errors.cpf && <span className="auth-field__error">{errors.cpf}</span>}
+                  </div>
+
+                  <div className={`auth-field ${errors.rg ? 'is-invalid' : ''}`}>
+                    <label htmlFor="rg">RG</label>
+                    <div className="auth-input">
+                      <span className="auth-input__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm5 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 8h6c0-1.66-1.34-3-3-3s-3 1.34-3 3zm8-8h6v2h-6V9zm0 4h4v2h-4v-2z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </span>
+                      <input
+                        id="rg"
+                        type="text"
+                        placeholder="00.000.000-0"
+                        value={form.rg}
+                        onChange={(e) => update('rg', e.target.value)}
+                        disabled={loading}
+                        maxLength={20}
+                      />
+                    </div>
+                    {errors.rg && <span className="auth-field__error">{errors.rg}</span>}
+                  </div>
+                </div>
+
+                <div className={`auth-field ${errors.endereco ? 'is-invalid' : ''}`}>
+                  <label htmlFor="endereco">Endereço</label>
+                  <div className="auth-input">
+                    <span className="auth-input__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 2a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      id="endereco"
+                      type="text"
+                      placeholder="Rua, número, bairro, cidade — UF"
+                      autoComplete="street-address"
+                      value={form.endereco}
+                      onChange={(e) => update('endereco', e.target.value)}
+                      disabled={loading}
+                      maxLength={255}
+                    />
+                  </div>
+                  {errors.endereco && (
+                    <span className="auth-field__error">{errors.endereco}</span>
+                  )}
+                </div>
+              </fieldset>
+
+              <fieldset className="cadastro-section">
+                <legend>Acadêmico</legend>
+
+                <div className={`auth-field ${errors.instituicaoId ? 'is-invalid' : ''}`}>
+                  <label htmlFor="instituicaoId">Instituição</label>
+                  <div className="auth-input">
+                    <span className="auth-input__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4l7 3.82 7-3.82v-4l-7 3.82-7-3.82z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <select
+                      id="instituicaoId"
+                      className="cadastro-select"
+                      value={form.instituicaoId}
+                      onChange={(e) => update('instituicaoId', e.target.value)}
+                      disabled={loading || loadingInstituicoes || !!instituicoesError}
+                    >
+                      <option value="">
+                        {loadingInstituicoes
+                          ? 'Carregando instituições...'
+                          : instituicoesError
+                            ? 'Não foi possível carregar'
+                            : 'Selecione sua instituição'}
+                      </option>
+                      {instituicoes.map((i) => (
+                        <option key={i.id} value={i.id}>
+                          {i.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.instituicaoId && (
+                    <span className="auth-field__error">{errors.instituicaoId}</span>
+                  )}
+                  {instituicoesError && (
+                    <span className="auth-field__error">{instituicoesError}</span>
+                  )}
+                </div>
+
+                <div className={`auth-field ${errors.curso ? 'is-invalid' : ''}`}>
+                  <label htmlFor="curso">Curso</label>
+                  <div className="auth-input">
+                    <span className="auth-input__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M21 5l-9-4-9 4v2l9 4 7.27-3.23L21 9.23V13h2V5h-2zM5 13.18v4L12 21l7-3.82v-4l-7 3.82-7-3.82z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      id="curso"
+                      type="text"
+                      placeholder="Engenharia de Software"
+                      value={form.curso}
+                      onChange={(e) => update('curso', e.target.value)}
+                      disabled={loading}
+                      maxLength={120}
+                    />
+                  </div>
+                  {errors.curso && <span className="auth-field__error">{errors.curso}</span>}
+                </div>
+              </fieldset>
+
+              <div className="cadastro-info">
+                <span className="cadastro-info__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+                <p>
+                  Após o cadastro, enviaremos uma <strong>senha provisória</strong> para
+                  o e-mail informado. Use-a no primeiro acesso e troque assim que entrar.
+                </p>
               </div>
 
-              <div className={`auth-field ${errors.email ? 'is-invalid' : ''}`}>
-                <label htmlFor="email">E-mail</label>
-                <div className="auth-input">
-                  <span className="auth-input__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
+              {serverError && (
+                <div className="cadastro-error" role="alert">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  {serverError}
+                </div>
+              )}
+
+              <button type="submit" className="auth-submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="auth-submit__spinner" aria-hidden="true" />
+                    Criando conta...
+                  </>
+                ) : (
+                  <>
+                    Criar minha conta
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path
-                        d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V8H4zm16 2.6-7.45 4.66a1 1 0 0 1-1.1 0L4 10.6V16h16v-5.4z"
-                        fill="currentColor"
+                        d="M5 12h14M13 6l6 6-6 6"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
-                  </span>
-                  <input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="voce@email.com"
-                    value={form.email}
-                    onChange={(e) => update('email', e.target.value)}
-                    disabled={loading}
-                    maxLength={160}
-                  />
-                </div>
-                {errors.email && <span className="auth-field__error">{errors.email}</span>}
-              </div>
+                  </>
+                )}
+              </button>
 
-              <div className="cadastro-grid">
-                <div className={`auth-field ${errors.cpf ? 'is-invalid' : ''}`}>
-                  <label htmlFor="cpf">CPF</label>
+              <p className="cadastro-login">
+                Já tem conta?{' '}
+                <button
+                  type="button"
+                  className="auth-link auth-link--bold"
+                  onClick={() => onBackToLogin?.()}
+                >
+                  Fazer login
+                </button>
+              </p>
+            </form>
+          ) : (
+            // ============== FORMULÁRIO DE EMPRESA ==============
+            <form className="auth-form cadastro-form" onSubmit={handleSubmitEmpresa} noValidate>
+              <fieldset className="cadastro-section">
+                <legend>Dados da empresa</legend>
+
+                <div className={`auth-field ${empresaErrors.nomeFantasia ? 'is-invalid' : ''}`}>
+                  <label htmlFor="nomeFantasia">Nome fantasia</label>
+                  <div className="auth-input">
+                    <span className="auth-input__icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M3 21V7l9-4 9 4v14h-6v-6h-6v6H3zm6-9h2v-2H9v2zm4 0h2v-2h-2v2zm-4-4h2V6H9v2zm4 0h2V6h-2v2z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </span>
+                    <input
+                      id="nomeFantasia"
+                      type="text"
+                      placeholder="Nome da sua empresa"
+                      autoComplete="organization"
+                      value={empresaForm.nomeFantasia}
+                      onChange={(e) => updateEmpresa('nomeFantasia', e.target.value)}
+                      disabled={loading}
+                      maxLength={160}
+                    />
+                  </div>
+                  {empresaErrors.nomeFantasia && (
+                    <span className="auth-field__error">{empresaErrors.nomeFantasia}</span>
+                  )}
+                </div>
+
+                <div className={`auth-field ${empresaErrors.cnpj ? 'is-invalid' : ''}`}>
+                  <label htmlFor="cnpj">CNPJ</label>
                   <div className="auth-input">
                     <span className="auth-input__icon" aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none">
@@ -333,200 +740,111 @@ function Cadastro({ onBackToLogin }: CadastroProps) {
                       </svg>
                     </span>
                     <input
-                      id="cpf"
+                      id="cnpj"
                       type="text"
                       inputMode="numeric"
-                      placeholder="000.000.000-00"
-                      value={form.cpf}
-                      onChange={(e) => update('cpf', maskCpf(e.target.value))}
+                      placeholder="00.000.000/0000-00"
+                      value={empresaForm.cnpj}
+                      onChange={(e) => updateEmpresa('cnpj', maskCnpj(e.target.value))}
                       disabled={loading}
-                      maxLength={14}
+                      maxLength={18}
                     />
                   </div>
-                  {errors.cpf && <span className="auth-field__error">{errors.cpf}</span>}
+                  {empresaErrors.cnpj && (
+                    <span className="auth-field__error">{empresaErrors.cnpj}</span>
+                  )}
                 </div>
 
-                <div className={`auth-field ${errors.rg ? 'is-invalid' : ''}`}>
-                  <label htmlFor="rg">RG</label>
+                <div className={`auth-field ${empresaErrors.email ? 'is-invalid' : ''}`}>
+                  <label htmlFor="empresaEmail">E-mail corporativo</label>
                   <div className="auth-input">
                     <span className="auth-input__icon" aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none">
                         <path
-                          d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm5 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 8h6c0-1.66-1.34-3-3-3s-3 1.34-3 3zm8-8h6v2h-6V9zm0 4h4v2h-4v-2z"
+                          d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v.4l8 5 8-5V8H4zm16 2.6-7.45 4.66a1 1 0 0 1-1.1 0L4 10.6V16h16v-5.4z"
                           fill="currentColor"
                         />
                       </svg>
                     </span>
                     <input
-                      id="rg"
-                      type="text"
-                      placeholder="00.000.000-0"
-                      value={form.rg}
-                      onChange={(e) => update('rg', e.target.value)}
+                      id="empresaEmail"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="contato@suaempresa.com"
+                      value={empresaForm.email}
+                      onChange={(e) => updateEmpresa('email', e.target.value)}
                       disabled={loading}
-                      maxLength={20}
+                      maxLength={160}
                     />
                   </div>
-                  {errors.rg && <span className="auth-field__error">{errors.rg}</span>}
+                  {empresaErrors.email && (
+                    <span className="auth-field__error">{empresaErrors.email}</span>
+                  )}
                 </div>
-              </div>
+              </fieldset>
 
-              <div className={`auth-field ${errors.endereco ? 'is-invalid' : ''}`}>
-                <label htmlFor="endereco">Endereço</label>
-                <div className="auth-input">
-                  <span className="auth-input__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 2a8 8 0 0 0-8 8c0 5.5 8 12 8 12s8-6.5 8-12a8 8 0 0 0-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </span>
-                  <input
-                    id="endereco"
-                    type="text"
-                    placeholder="Rua, número, bairro, cidade — UF"
-                    autoComplete="street-address"
-                    value={form.endereco}
-                    onChange={(e) => update('endereco', e.target.value)}
-                    disabled={loading}
-                    maxLength={255}
-                  />
-                </div>
-                {errors.endereco && (
-                  <span className="auth-field__error">{errors.endereco}</span>
-                )}
-              </div>
-            </fieldset>
-
-            <fieldset className="cadastro-section">
-              <legend>Acadêmico</legend>
-
-              <div className={`auth-field ${errors.instituicaoId ? 'is-invalid' : ''}`}>
-                <label htmlFor="instituicaoId">Instituição</label>
-                <div className="auth-input">
-                  <span className="auth-input__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4l7 3.82 7-3.82v-4l-7 3.82-7-3.82z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </span>
-                  <select
-                    id="instituicaoId"
-                    className="cadastro-select"
-                    value={form.instituicaoId}
-                    onChange={(e) => update('instituicaoId', e.target.value)}
-                    disabled={loading || loadingInstituicoes || !!instituicoesError}
-                  >
-                    <option value="">
-                      {loadingInstituicoes
-                        ? 'Carregando instituições...'
-                        : instituicoesError
-                          ? 'Não foi possível carregar'
-                          : 'Selecione sua instituição'}
-                    </option>
-                    {instituicoes.map((i) => (
-                      <option key={i.id} value={i.id}>
-                        {i.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {errors.instituicaoId && (
-                  <span className="auth-field__error">{errors.instituicaoId}</span>
-                )}
-                {instituicoesError && (
-                  <span className="auth-field__error">{instituicoesError}</span>
-                )}
-              </div>
-
-              <div className={`auth-field ${errors.curso ? 'is-invalid' : ''}`}>
-                <label htmlFor="curso">Curso</label>
-                <div className="auth-input">
-                  <span className="auth-input__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M21 5l-9-4-9 4v2l9 4 7.27-3.23L21 9.23V13h2V5h-2zM5 13.18v4L12 21l7-3.82v-4l-7 3.82-7-3.82z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </span>
-                  <input
-                    id="curso"
-                    type="text"
-                    placeholder="Engenharia de Software"
-                    value={form.curso}
-                    onChange={(e) => update('curso', e.target.value)}
-                    disabled={loading}
-                    maxLength={120}
-                  />
-                </div>
-                {errors.curso && <span className="auth-field__error">{errors.curso}</span>}
-              </div>
-            </fieldset>
-
-            <div className="cadastro-info">
-              <span className="cadastro-info__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </span>
-              <p>
-                Após o cadastro, enviaremos uma <strong>senha provisória</strong> para
-                o e-mail informado. Use-a no primeiro acesso e troque assim que entrar.
-              </p>
-            </div>
-
-            {serverError && (
-              <div className="cadastro-error" role="alert">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                    fill="currentColor"
-                  />
-                </svg>
-                {serverError}
-              </div>
-            )}
-
-            <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="auth-submit__spinner" aria-hidden="true" />
-                  Criando conta...
-                </>
-              ) : (
-                <>
-                  Criar minha conta
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <div className="cadastro-info">
+                <span className="cadastro-info__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
                     <path
-                      d="M5 12h14M13 6l6 6-6 6"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="currentColor"
                     />
                   </svg>
-                </>
-              )}
-            </button>
+                </span>
+                <p>
+                  Após o cadastro sua empresa ficará com status{' '}
+                  <strong>pendente</strong> até a aprovação da equipe Coinly.
+                  Enviaremos uma senha provisória para o e-mail informado.
+                </p>
+              </div>
 
-            <p className="cadastro-login">
-              Já tem conta?{' '}
-              <button
-                type="button"
-                className="auth-link auth-link--bold"
-                onClick={() => onBackToLogin?.()}
-              >
-                Fazer login
+              {serverError && (
+                <div className="cadastro-error" role="alert">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  {serverError}
+                </div>
+              )}
+
+              <button type="submit" className="auth-submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="auth-submit__spinner" aria-hidden="true" />
+                    Cadastrando empresa...
+                  </>
+                ) : (
+                  <>
+                    Cadastrar empresa
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M5 12h14M13 6l6 6-6 6"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </>
+                )}
               </button>
-            </p>
-          </form>
+
+              <p className="cadastro-login">
+                Já tem conta?{' '}
+                <button
+                  type="button"
+                  className="auth-link auth-link--bold"
+                  onClick={() => onBackToLogin?.()}
+                >
+                  Fazer login
+                </button>
+              </p>
+            </form>
+          )}
         </div>
 
         <p className="auth-foot">

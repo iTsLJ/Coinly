@@ -123,6 +123,54 @@
   color: var(--color-text-muted);
 }
 
+/* ============== TOGGLE ALUNO / EMPRESA ============== */
+.cadastro-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 6px;
+  background: #f3f1f8;
+  border-radius: 999px;
+  margin: 0 0 22px;
+}
+
+.cadastro-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cadastro-toggle__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cadastro-toggle__btn:hover:not(:disabled):not(.is-active) {
+  color: var(--color-text);
+}
+
+.cadastro-toggle__btn.is-active {
+  background: #ffffff;
+  color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.cadastro-toggle__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* ============== SUCCESS STATE ============== */
 .cadastro-success {
   display: flex;
