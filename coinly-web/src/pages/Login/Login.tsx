@@ -12,9 +12,15 @@ type FormErrors = {
 type LoginProps = {
   onForgotPassword?: () => void
   onSignUp?: () => void
+  onSuccess?: () => void
 }
 
-function Login({ onForgotPassword, onSignUp }: LoginProps) {
+function Login({ 
+  onForgotPassword, 
+  onSignUp, 
+  onSuccess 
+}: LoginProps) {
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -51,7 +57,8 @@ function Login({ onForgotPassword, onSignUp }: LoginProps) {
         sessionStorage.setItem('token', data.token)
       }
 
-      window.location.href = '/home'
+      onSuccess?.()
+
     } catch (error: any) {
       setErrors({
         email: ' ',

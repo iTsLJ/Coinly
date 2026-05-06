@@ -1,0 +1,123 @@
+.home {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e1b4b);
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header {
+  padding: 20px 40px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #a855f7; /* Roxo */
+}
+
+.home-logo img {
+  height: 42px;
+  width: auto;
+}
+
+.home-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-user span {
+  color: #c4d0ff;
+  font-weight: 500;
+}
+
+.home-user button {
+  background: #7c3aed;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.home-user button:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+}
+
+/* Conteúdo Principal */
+.home-content {
+  flex: 1;
+  padding: 60px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.home-welcome {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.home-welcome h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #e0e7ff;
+}
+
+.home-welcome p {
+  font-size: 18px;
+  color: #a5b4fc;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Cards no estilo do Login */
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.home-card {
+  background: rgba(30, 27, 75, 0.85);
+  padding: 32px 28px;
+  border-radius: 16px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.home-card:hover {
+  transform: translateY(-6px);
+  border-color: #a855f7;
+  box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.15);
+}
+
+.home-card h3 {
+  font-size: 22px;
+  margin-bottom: 14px;
+  color: #c4d0ff;
+}
+
+.home-card p {
+  color: #94a3b8;
+  line-height: 1.55;
+}
