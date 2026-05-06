@@ -29,14 +29,23 @@ public class AdminSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (administradorRepository.findByEmail(properties.email()).isPresent()) {
+        String email = properties.email();
+        String senha = properties.senha();
+        String nome = properties.nome();
+
+        if (email == null || email.isBlank() || senha == null || senha.isBlank() || nome == null || nome.isBlank()) {
+            log.warn("AdminSeeder ignorado: defina coinly.admin.email/senha/nome (ou as env vars ADMIN_EMAIL/ADMIN_SENHA/ADMIN_NOME)");
+            return;
+        }
+
+        if (administradorRepository.findByEmail(email).isPresent()) {
             return;
         }
         Administrador admin = new Administrador();
-        admin.setNome(properties.nome());
-        admin.setEmail(properties.email());
-        admin.setSenha(passwordEncoder.encode(properties.senha()));
+        admin.setNome(nome);
+        admin.setEmail(email);
+        admin.setSenha(passwordEncoder.encode(senha));
         administradorRepository.save(admin);
-        log.info("Administrador inicial criado: {}", properties.email());
+        log.info("Administrador inicial criado: {}", email);
     }
 }
