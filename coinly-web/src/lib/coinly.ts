@@ -30,8 +30,33 @@ export type AlunoResponse = {
   instituicaoNome: string
 }
 
+export type LoginRequest = {
+  email: string
+  senha: string
+}
+
+export type LoginResponse = {
+  token: string
+  expiresAt: string
+  username: string
+  roles: string[]
+}
+
 export const coinlyApi = {
-  listInstituicoes: () => api.get<Instituicao[]>('/api/instituicoes'),
+  login: (request: LoginRequest) =>
+    api.post<LoginResponse>('/auth/login', request),
+
+  me: () =>
+    api.get<LoginResponse>('/auth/me'),
+
+  listInstituicoes: () =>
+    api.get<Instituicao[]>('/api/instituicoes'),
+
   createAluno: (request: AlunoCreateRequest) =>
     api.post<AlunoResponse>('/api/alunos', request),
+}
+
+export const logout = () => {
+  localStorage.removeItem('token')
+  sessionStorage.removeItem('token')
 }

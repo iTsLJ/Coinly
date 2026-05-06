@@ -11,8 +11,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "aluno")
-@Getter
-@Setter
 @NoArgsConstructor
 public class Aluno extends Usuario {
 
@@ -34,4 +32,54 @@ public class Aluno extends Usuario {
     @ManyToOne(optional = false)
     @JoinColumn(name = "instituicao_id", nullable = false)
     private Instituicao instituicao;
+
+	public String getCpf() {
+		return cpf;
+	}
+
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
+	}
+
+	public String getRg() {
+		return rg;
+	}
+
+	public void setRg(String rg) {
+		this.rg = rg;
+	}
+
+	public String getEndereco() {
+		return endereco;
+	}
+
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
+
+	public String getCurso() {
+		return curso;
+	}
+
+	public void setCurso(String curso) {
+		this.curso = curso;
+	}
+
+	public int getSaldoMoedas() {
+		return saldoMoedas;
+	}
+
+	public void setSaldoMoedas(int saldoMoedas) {
+		this.saldoMoedas = saldoMoedas;
+	}
+
+	public Instituicao getInstituicao() {
+		return instituicao;
+	}
+
+	public void setInstituicao(Instituicao instituicao) {
+		this.instituicao = instituicao;
+	}
+    
+    
 }

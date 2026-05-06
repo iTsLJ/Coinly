@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import AuthBrandPanel from '../../components/AuthBrandPanel/AuthBrandPanel'
 import '../../components/AuthBrandPanel/AuthLayout.css'
 import './Login.css'
+import { coinlyApi } from '../../lib/coinly'
 
 type FormErrors = {
   email?: string
@@ -20,7 +21,6 @@ function Login({ onForgotPassword, onSignUp }: LoginProps) {
   const [remember, setRemember] = useState(true)
   const [errors, setErrors] = useState<FormErrors>({})
   const [loading, setLoading] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
 
   const validate = (): FormErrors => {
     const next: FormErrors = {}
@@ -38,10 +38,28 @@ function Login({ onForgotPassword, onSignUp }: LoginProps) {
     if (Object.keys(nextErrors).length > 0) return
 
     setLoading(true)
-    setSubmitted(false)
-    await new Promise((resolve) => setTimeout(resolve, 900))
-    setLoading(false)
-    setSubmitted(true)
+
+    try {
+      const data = await coinlyApi.login({
+        email,
+        senha: password,
+      })
+
+      if (remember) {
+        localStorage.setItem('token', data.token)
+      } else {
+        sessionStorage.setItem('token', data.token)
+      }
+
+      window.location.href = '/home'
+    } catch (error: any) {
+      setErrors({
+        email: ' ',
+        password: error.message || 'Erro ao fazer login',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -171,66 +189,8 @@ function Login({ onForgotPassword, onSignUp }: LoginProps) {
               className={`auth-submit ${loading ? 'is-loading' : ''}`}
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <span className="auth-submit__spinner" aria-hidden="true" />
-                  Entrando...
-                </>
-              ) : (
-                <>
-                  Entrar
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M5 12h14M13 6l6 6-6 6"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </>
-              )}
+              {loading ? 'Entrando...' : 'Entrar'}
             </button>
-
-            {submitted && !loading && (
-              <div className="auth-success" role="status">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M5 12.5l4 4L19 7"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Login validado! Em breve você será redirecionado.
-              </div>
-            )}
-
-            <div className="login-divider">
-              <span>ou continue com</span>
-            </div>
-
-            <div className="login-socials">
-              <button type="button" className="login-social" aria-label="Entrar com Google">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    fill="#EA4335"
-                    d="M12 10.2v3.9h5.45c-.24 1.4-1.66 4.1-5.45 4.1-3.28 0-5.96-2.72-5.96-6.06s2.68-6.06 5.96-6.06c1.87 0 3.12.79 3.84 1.47l2.62-2.52C16.86 3.42 14.66 2.5 12 2.5 6.95 2.5 2.86 6.6 2.86 11.65S6.95 20.8 12 20.8c6.92 0 9.5-4.86 9.5-7.31 0-.49-.05-.86-.12-1.29H12z"
-                  />
-                </svg>
-                Google
-              </button>
-              <button type="button" className="login-social" aria-label="Entrar com Microsoft">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="3" width="8.5" height="8.5" fill="#F25022" />
-                  <rect x="12.5" y="3" width="8.5" height="8.5" fill="#7FBA00" />
-                  <rect x="3" y="12.5" width="8.5" height="8.5" fill="#00A4EF" />
-                  <rect x="12.5" y="12.5" width="8.5" height="8.5" fill="#FFB900" />
-                </svg>
-                Microsoft
-              </button>
-            </div>
 
             <p className="login-signup">
               Ainda não tem conta?{' '}
@@ -244,10 +204,6 @@ function Login({ onForgotPassword, onSignUp }: LoginProps) {
             </p>
           </form>
         </div>
-
-        <p className="auth-foot">
-          © {new Date().getFullYear()} Coinly · Moeda Estudantil
-        </p>
       </main>
     </div>
   )
