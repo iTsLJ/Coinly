@@ -57,4 +57,29 @@ public class NotificacaoService {
             log.warn("Falha ao enviar email para {}: {}", destinatario, ex.getMessage());
         }
     }
+    
+    public void notificarRecebimentoMoedas(String email, String nome, int quantidade) {
+        Context context = new Context();
+        context.setVariable("nome", nome);
+        context.setVariable("quantidade", quantidade);
+        String html = templateEngine.process("email/recebimento", context);
+        enviarHtml(email, "Você recebeu novas moedas!", html);
+    }
+
+    public void enviarCupomResgate(String email, String vantagem, String codigo) {
+        Context context = new Context();
+        context.setVariable("vantagem", vantagem);
+        context.setVariable("codigo", codigo);
+        String html = templateEngine.process("email/cupom", context);
+        enviarHtml(email, "Seu cupom de resgate", html);
+    }
+
+    public void notificarParceiroResgate(String email, String aluno, String vantagem, String codigo) {
+        Context context = new Context();
+        context.setVariable("aluno", aluno);
+        context.setVariable("vantagem", vantagem);
+        context.setVariable("codigo", codigo);
+        String html = templateEngine.process("email/parceiro-notificacao", context);
+        enviarHtml(email, "Nova vantagem resgatada", html);
+    }
 }

@@ -10,6 +10,8 @@ import com.coinly.api.exception.ResourceNotFoundException;
 import com.coinly.api.repository.InstituicaoRepository;
 import com.coinly.api.repository.ProfessorRepository;
 import com.coinly.api.repository.UsuarioRepository;
+
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,5 +130,24 @@ public class ProfessorService {
 
     private String normalizarCpf(String cpf) {
         return cpf == null ? null : cpf.replaceAll("\\D", "");
+    }
+    
+    @Transactional
+    public void deduzirSaldo(Long id, int valor) {
+        Professor professor = professorRepository.findById(id).orElseThrow();
+        professor.setSaldoMoedas(professor.getSaldoMoedas() - valor);
+        professorRepository.save(professor);
+    }
+
+    @Scheduled(cron = "0 0 0 1 1,7 *")
+    @Transactional
+    public void creditarMoedasSemestrais() {
+        List<Professor> professores = professorRepository.findAll();
+        professores.forEach(p -> p.setSaldoMoedas(p.getSaldoMoedas() + 1000));
+        professorRepository.saveAll(professores);
+    }
+    public Professor buscarPorEmail(String email) {
+    	return professorRepository.findByEmail(email)
+    			.orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado"));
     }
 }

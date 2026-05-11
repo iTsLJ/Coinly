@@ -1,33 +1,103 @@
-import { useState } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+
 import Login from './pages/Login/Login'
-import ForgotPassword from './pages/ForgotPassword/ForgotPassword'
 import Cadastro from './pages/Cadastro/Cadastro'
+
 import HomePage from './pages/HomePage/HomePage'
+import EnviarMoedas from './pages/EnviarMoedas/EnviarMoedas'
+import CatalogoVantagens from './pages/CatalogoVantagens/CatalogoVantagens'
+import ExtratoPage from './pages/Extrato/ExtratoPage'
 
-type Route = 'login' | 'forgot' | 'cadastro' | 'home'
+import { useAuth } from './hooks/useAuth'
 
-function App() {
-  const [route, setRoute] = useState<Route>('login')
+function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const { isAuthenticated, loading } = useAuth()
 
-  if (route === 'forgot') {
-    return <ForgotPassword onBackToLogin={() => setRoute('login')} />
+  if (loading) {
+    return (
+      <div style={{ padding: '50px', textAlign: 'center' }}>
+        Carregando...
+      </div>
+    )
   }
 
-  if (route === 'cadastro') {
-    return <Cadastro onBackToLogin={() => setRoute('login')} />
-  }
-
-  if (route === 'home') {
-    return <HomePage />
-  }
-
-  return (
-    <Login
-      onForgotPassword={() => setRoute('forgot')}
-      onSignUp={() => setRoute('cadastro')}
-      onSuccess={() => setRoute('home')}
-    />
+  return isAuthenticated ? (
+    <>{children}</>
+  ) : (
+    <Navigate to="/login" replace />
   )
 }
 
-export default App
+function AppRoutes() {
+  const navigate = useNavigate()
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          <Login
+            onSignUp={() => navigate('/cadastro')}
+            onSuccess={() => navigate('/')}
+          />
+        }
+      />
+
+      <Route
+        path="/cadastro"
+        element={
+          <Cadastro
+            onBackToLogin={() => navigate('/login')}
+          />
+        }
+      />
+
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/enviar-moedas"
+        element={
+          <ProtectedRoute>
+            <EnviarMoedas />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/vantagens"
+        element={
+          <ProtectedRoute>
+            <CatalogoVantagens />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/extrato"
+        element={
+          <ProtectedRoute>
+            <ExtratoPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="*"
+        element={<Navigate to="/login" replace />}
+      />
+    </Routes>
+  )
+}
+
+export default AppRoutes

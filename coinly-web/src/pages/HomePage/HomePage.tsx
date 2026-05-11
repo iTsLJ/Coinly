@@ -1,45 +1,34 @@
-import { useEffect, useState } from 'react'
-import { coinlyApi, logout } from '../../lib/coinly'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 import './HomePage.css'
 
-type User = {
-  username: string
-  roles: string[]
-}
-
 function HomePage() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isAuthenticated,loading, isAluno, isProfessor, isEmpresa, logout } = useAuth()
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await coinlyApi.me()
-        setUser({
-          username: data.username,
-          roles: data.roles,
-        })
-      } catch {
-        window.location.href = '/'
-      }
+useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/login', { replace: true })
     }
-    load()
-  }, [])
+  }, [isAuthenticated, loading, navigate])
 
-  const handleLogout = () => {
-    logout()
-    window.location.href = '/'
+  if (loading) {
+    return <div className="loading-screen">Carregando...</div>
   }
+  if (!user) return null
 
   return (
     <div className="home">
       <header className="home-header">
         <div className="home-logo">
           <img src="/coinly.png" alt="Coinly" />
+          <span>Coinly</span>
         </div>
 
         <div className="home-user">
-          <span>Olá, {user?.username}</span>
-          <button onClick={handleLogout}>Sair</button>
+          <span>Olá, {user.username}</span>
+          <button onClick={logout}>Sair</button>
         </div>
       </header>
 
@@ -50,35 +39,32 @@ function HomePage() {
         </div>
 
         <div className="home-cards">
-          <div className="home-card">
-            <h3>👨‍🎓 Alunos</h3>
-            <p>Gerencie alunos cadastrados, visualize saldos e histórico de moedas.</p>
-          </div>
+          {isProfessor && (
+            <div className="home-card" onClick={() => navigate('/enviar-moedas')}>
+              <h3>👨‍🏫 Enviar Moedas</h3>
+              <p>Reconheça o mérito dos seus alunos distribuindo Coinlys.</p>
+            </div>
+          )}
 
-          <div className="home-card">
-            <h3>🏛️ Instituições</h3>
-            <p>Visualize instituições parceiras e gerencie parcerias.</p>
-          </div>
+          {isAluno && (
+            <>
+              <div className="home-card" onClick={() => navigate('/vantagens')}>
+                <h3>🏪 Resgatar Vantagens</h3>
+                <p>Troque seus Coinlys por produtos e descontos.</p>
+              </div>
+              <div className="home-card" onClick={() => navigate('/extrato')}>
+                <h3>💰 Meu Extrato</h3>
+                <p>Acompanhe seu saldo e histórico de transações.</p>
+              </div>
+            </>
+          )}
 
-          <div className="home-card">
-            <h3>💰 Minhas Moedas</h3>
-            <p>Acompanhe seu saldo atual e extrato de transações.</p>
-          </div>
-
-          <div className="home-card">
-            <h3>🏪 Vantagens</h3>
-            <p>Explore e resgate recompensas disponíveis.</p>
-          </div>
-
-          <div className="home-card">
-            <h3>👨‍🏫 Professores</h3>
-            <p>Distribuição de moedas por mérito acadêmico.</p>
-          </div>
-
-          <div className="home-card">
-            <h3>📊 Relatórios</h3>
-            <p>Acompanhe estatísticas e movimentações do sistema.</p>
-          </div>
+          {isEmpresa && (
+            <div className="home-card">
+              <h3>🏢 Minhas Vantagens</h3>
+              <p>Gerencie as vantagens oferecidas aos alunos.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

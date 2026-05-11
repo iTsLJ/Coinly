@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AuthBrandPanel from '../../components/AuthBrandPanel/AuthBrandPanel'
 import '../../components/AuthBrandPanel/AuthLayout.css'
 import './Login.css'
 import { coinlyApi } from '../../lib/coinly'
+import { useAuth } from '../../hooks/useAuth'
 
 type FormErrors = {
   email?: string
@@ -16,11 +18,13 @@ type LoginProps = {
 }
 
 function Login({ 
+  
   onForgotPassword, 
   onSignUp, 
   onSuccess 
 }: LoginProps) {
-
+const navigate = useNavigate()
+const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -46,28 +50,17 @@ function Login({
     setLoading(true)
 
     try {
-      const data = await coinlyApi.login({
-        email,
-        senha: password,
-      })
+    await login({ email, senha: password })
 
-      if (remember) {
-        localStorage.setItem('token', data.token)
-      } else {
-        sessionStorage.setItem('token', data.token)
-      }
+    navigate('/', { replace: true })
 
-      onSuccess?.()
-
-    } catch (error: any) {
-      setErrors({
-        email: ' ',
-        password: error.message || 'Erro ao fazer login',
-      })
-    } finally {
-      setLoading(false)
-    }
+  } catch (error: any) {
+    const message = error.payload?.message || 'Credenciais inválidas'
+    setErrors({ email: ' ', password: message })
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="auth-shell">
@@ -204,7 +197,7 @@ function Login({
               <button
                 type="button"
                 className="auth-link auth-link--bold"
-                onClick={() => onSignUp?.()}
+                onClick={() => navigate('/cadastro')}
               >
                 Cadastre-se
               </button>

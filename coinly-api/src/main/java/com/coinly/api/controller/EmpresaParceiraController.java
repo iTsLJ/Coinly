@@ -59,7 +59,7 @@ public class EmpresaParceiraController {
     }
 
     @PatchMapping("/{id}/aprovar")
-    public EmpresaParceiraResponse aprovar(@PathVariable Long id) {
+    public EmpresaParceiraResponse aprovar(@PathVariable("id") Long id) {
         return empresaService.aprovar(id);
     }
 
