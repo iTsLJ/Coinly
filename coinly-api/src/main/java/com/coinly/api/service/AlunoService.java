@@ -128,4 +128,27 @@ public class AlunoService {
     private String normalizarCpf(String cpf) {
         return cpf == null ? null : cpf.replaceAll("\\D", "");
     }
+    
+    @Transactional
+    public void adicionarSaldo(Long id, int valor) {
+        Aluno aluno = alunoRepository.findById(id).orElseThrow();
+        aluno.setSaldoMoedas(aluno.getSaldoMoedas() + valor);
+        alunoRepository.save(aluno);
+    }
+
+    @Transactional
+    public void deduzirSaldo(Long id, int valor) {
+        Aluno aluno = alunoRepository.findById(id).orElseThrow();
+        aluno.setSaldoMoedas(aluno.getSaldoMoedas() - valor);
+        alunoRepository.save(aluno);
+    }
+    
+    public Aluno findById(Long id) {
+    	return alunoRepository.findById(id)
+    			.orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado: " + id));
+    }
+    public Aluno buscarPorEmail(String email) {
+    	return alunoRepository.findByEmail(email)
+    			.orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
+    }
 }

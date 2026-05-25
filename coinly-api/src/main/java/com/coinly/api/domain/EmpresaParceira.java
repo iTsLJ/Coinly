@@ -11,8 +11,6 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "empresa_parceira")
-@Getter
-@Setter
 @NoArgsConstructor
 public class EmpresaParceira extends Usuario {
 
@@ -25,4 +23,30 @@ public class EmpresaParceira extends Usuario {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private StatusEmpresa status = StatusEmpresa.PENDENTE;
+
+	public String getCnpj() {
+		return cnpj;
+	}
+
+	public void setCnpj(String cnpj) {
+		this.cnpj = cnpj;
+	}
+
+	public String getNomeFantasia() {
+		return nomeFantasia;
+	}
+
+	public void setNomeFantasia(String nomeFantasia) {
+		this.nomeFantasia = nomeFantasia;
+	}
+
+	public StatusEmpresa getStatus() {
+		return status;
+	}
+
+	public void setStatus(StatusEmpresa status) {
+		this.status = status;
+	}
+    
+    
 }
