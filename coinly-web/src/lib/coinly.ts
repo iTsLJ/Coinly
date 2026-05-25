@@ -84,7 +84,16 @@ export type LoginResponse = {
   username: string
   roles: string[]
 }
-
+export type MeResponse = {
+  id: number;
+  alunoId?: number;
+  professorId?: number;
+  empresaId?: number;
+  nome: string;
+  email: string;
+  roles: string[];
+  tipo: 'ALUNO' | 'PROFESSOR' | 'EMPRESA';
+};
 export type TransacaoResponse = {
   id: number
   data: string
@@ -109,7 +118,7 @@ export const coinlyApi = {
     api.post<LoginResponse>('/auth/login', request),
 
   me: () => api.get<LoginResponse>('/auth/me'),
-
+  profile: () => api.get<MeResponse>('/auth/profile'),
   listInstituicoes: () =>
     api.get<Instituicao[]>('/api/instituicoes'),
 
@@ -158,4 +167,8 @@ export const coinlyApi = {
 
   getExtrato: () =>
     api.get<TransacaoResponse[]>('/api/transacoes/meu-extrato'),
+
+  getAlunoById: (id: number) => api.get<any>(`/api/alunos/${id}`),
+getProfessorById: (id: number) => api.get<any>(`/api/professores/${id}`),
+getEmpresaById: (id: number) => api.get<any>(`/api/empresas/${id}`),
 }

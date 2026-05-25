@@ -38,7 +38,7 @@ public class EmpresaParceiraController {
     }
 
     @GetMapping("/{id}")
-    public EmpresaParceiraResponse buscar(@PathVariable Long id) {
+    public EmpresaParceiraResponse buscar(@PathVariable("id") Long id) {
         return empresaService.buscarPorId(id);
     }
 
