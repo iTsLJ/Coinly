@@ -118,6 +118,7 @@ export type VantagemRequest = {
   fotoUrl?: string;
   custoMoedas: number;
 };
+
 export const coinlyApi = {
   login: (request: LoginRequest) =>
     api.post<LoginResponse>('/auth/login', request),

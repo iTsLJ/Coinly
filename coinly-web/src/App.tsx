@@ -5,9 +5,10 @@ import Cadastro from './pages/Cadastro/Cadastro'
 
 import HomePage from './pages/HomePage/HomePage'
 import EnviarMoedas from './pages/EnviarMoedas/EnviarMoedas'
-import ExtratoPage from './pages/Extrato/ExtratoPage'
+import ExtratoPage from './pages/ExtratoPage/ExtratoPage'
 import Vantagens from './pages/Vantagens/Vantagens'
 import EmpresaVantagens from './pages/EmpresaVantagens/EmpresaVantagens' 
+
 
 import { useAuth } from './hooks/useAuth'
 
@@ -73,7 +74,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+<Route path="/extrato" element={<ExtratoPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )

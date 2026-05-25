@@ -1,0 +1,91 @@
+.extrato-container {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    padding: 40px;
+}
+
+.extrato-header {
+    max-width: 1200px;
+    margin: 0 auto 30px auto;
+}
+
+.extrato-header h1 {
+    font-size: 40px;
+    color: #6C4DFF;
+    margin-bottom: 8px;
+}
+
+.extrato-header p {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+.extrato-card {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.extrato-table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1.5fr 1.5fr;
+    background: linear-gradient(135deg, #6C4DFF, #A78BFA);
+    color: white;
+    font-weight: bold;
+    padding: 20px;
+}
+
+.extrato-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1.5fr 1.5fr;
+    padding: 20px;
+    align-items: center;
+    border-bottom: 1px solid #f1f1f1;
+    transition: 0.2s;
+}
+
+.extrato-row:hover {
+    background-color: #fafafa;
+}
+
+.badge {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.envio {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+.resgate {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.quantidade {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1E1B2E;
+}
+
+.mensagem {
+    color: #374151;
+}
+
+.data {
+    color: #6B7280;
+    font-size: 14px;
+}
+
+.extrato-loading,
+.extrato-empty {
+    padding: 40px;
+    text-align: center;
+    color: #6B7280;
+}
