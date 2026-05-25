@@ -166,10 +166,17 @@ function HomePage() {
           )}
 
           {isEmpresa && (
-            <div className="home-card">
-              <h3>🏢 Minhas Vantagens</h3>
-              <p>Gerencie as vantagens oferecidas aos alunos.</p>
-            </div>
+            <>
+              <div className="home-card" onClick={() => navigate('/minhas-vantagens')}>
+                <h3>🏢 Minhas Vantagens</h3>
+                <p>Gerencie as vantagens oferecidas aos alunos.</p>
+              </div>
+
+              <div className="home-card" onClick={() => navigate('/vantagens')}>
+                <h3>🌐 Ver Todas as Vantagens</h3>
+                <p>Visualize todas as vantagens disponíveis no sistema.</p>
+              </div>
+            </>
           )}
         </div>
       </main>

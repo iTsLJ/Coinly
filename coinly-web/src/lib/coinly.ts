@@ -108,11 +108,16 @@ export type VantagemResponse = {
   id: number
   nome: string
   descricao: string
-  custo: number
+  custoMoedas: number
   fotoUrl?: string
   empresaNome: string
 }
-
+export type VantagemRequest = {
+  nome: string;
+  descricao: string;
+  fotoUrl?: string;
+  custoMoedas: number;
+};
 export const coinlyApi = {
   login: (request: LoginRequest) =>
     api.post<LoginResponse>('/auth/login', request),
@@ -162,8 +167,18 @@ export const coinlyApi = {
       vantagemId,
     }),
 
-  listarVantagens: () =>
+  listarVantagens: () => 
     api.get<VantagemResponse[]>('/api/vantagens'),
+  listarMinhasVantagens: () =>
+  api.get<VantagemResponse[]>('/api/vantagens/minhas'),
+
+
+  criarVantagem: (request: VantagemRequest) =>
+    api.post<VantagemResponse>('/api/vantagens', request),
+
+  deletarVantagem: (id: number) =>
+    api.delete<void>(`/api/vantagens/${id}`),
+  
 
   getExtrato: () =>
     api.get<TransacaoResponse[]>('/api/transacoes/meu-extrato'),
@@ -171,4 +186,5 @@ export const coinlyApi = {
   getAlunoById: (id: number) => api.get<any>(`/api/alunos/${id}`),
 getProfessorById: (id: number) => api.get<any>(`/api/professores/${id}`),
 getEmpresaById: (id: number) => api.get<any>(`/api/empresas/${id}`),
+
 }

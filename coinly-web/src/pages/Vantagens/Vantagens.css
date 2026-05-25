@@ -1,0 +1,139 @@
+.vantagens-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e1b4b);
+}
+
+.vantagens-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+  min-height: 100vh;
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.page-header {
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.page-header h1 {
+  margin-top: 14px;
+  color: #e2e8f0;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.btn-back {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  font-weight: 600;
+}
+
+.btn-back:hover {
+  border-color: #8b5cf6;
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.vantagens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 26px;
+}
+
+.vantagem-card {
+  background: rgba(30, 27, 75, 0.85);
+  border: 1px solid rgba(139, 92, 246, 0.18);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.vantagem-card:hover {
+  transform: translateY(-6px);
+  border-color: #8b5cf6;
+  box-shadow: 0 18px 30px rgba(139, 92, 246, 0.15);
+}
+
+.vantagem-img {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+
+.vantagem-card-content {
+  padding: 24px;
+}
+
+.vantagem-card h3 {
+  color: #f8fafc;
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+.empresa {
+  color: #a78bfa;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.descricao {
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.custo {
+  color: #67e8f9;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.btn-resgatar {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.btn-resgatar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.25);
+}
+
+.loading-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: #cbd5e1;
+  font-size: 20px;
+  background: linear-gradient(135deg, #0f172a, #1e1b4b);
+}
+
+@media (max-width: 768px) {
+  .vantagens-page {
+    padding: 28px 18px 60px;
+  }
+
+  .page-header h1 {
+    font-size: 30px;
+  }
+
+  .vantagens-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,6 +4,7 @@ import com.coinly.api.domain.EmpresaParceira;
 import com.coinly.api.domain.Vantagem;
 import com.coinly.api.dto.vantagem.VantagemRequest;
 import com.coinly.api.dto.vantagem.VantagemResponse;
+import com.coinly.api.exception.BusinessException;
 import com.coinly.api.exception.ResourceNotFoundException;
 import com.coinly.api.repository.VantagemRepository;
 import com.coinly.api.repository.UsuarioRepository;
@@ -44,9 +45,38 @@ public class VantagemService {
                 .map(VantagemResponse::from)
                 .toList();
     }
+    public List<VantagemResponse> listarMinhas() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        EmpresaParceira empresa = (EmpresaParceira) usuarioRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Empresa não encontrada"));
+
+        return vantagemRepository.findAllByEmpresa(empresa)
+                .stream()
+                .map(VantagemResponse::from)
+                .toList();
+    }
 
     public Vantagem buscarEntidadePorId(Long id) {
         return vantagemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vantagem não encontrada"));
+    }
+    
+    @Transactional
+    public void deletar(Long id) {
+        Vantagem vantagem = buscarEntidadePorId(id);
+        
+        String emailAtual = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!vantagem.getEmpresa().getEmail().equals(emailAtual)) {
+            throw new BusinessException("Você não tem permissão para excluir esta vantagem");
+        }
+
+        vantagemRepository.delete(vantagem);
     }
 }
