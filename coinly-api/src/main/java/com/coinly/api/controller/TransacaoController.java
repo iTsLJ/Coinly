@@ -19,6 +19,7 @@ import com.coinly.api.dto.enviarMoedas.EnviarMoedasRequest;
 import com.coinly.api.dto.enviarMoedas.EnviarMoedasResponse;
 import com.coinly.api.dto.transacao.TransacaoResponse;
 import com.coinly.api.dto.vantagem.ResgatarVantagemRequest;
+import com.coinly.api.dto.vantagem.ResgatarVantagemResponse;
 import com.coinly.api.messaging.EnviarMoedasCommand;
 import com.coinly.api.messaging.EnvioMoedasPublisher;
 import com.coinly.api.messaging.ResgateResultado;
@@ -62,7 +63,7 @@ public class TransacaoController {
 
     @PostMapping("/resgatar-vantagem")
     @PreAuthorize("hasRole('ALUNO')")
-    public ResponseEntity<String> resgatarVantagem(@RequestBody  @Valid ResgatarVantagemRequest request, Authentication auth) {
+    public ResponseEntity<ResgatarVantagemResponse> resgatarVantagem(@RequestBody  @Valid ResgatarVantagemRequest request, Authentication auth) {
         // Financeiro e cupom sao sincronos (cupom volta na resposta);
         // os e-mails sao despachados de forma assincrona via evento.
         ResgateResultado resultado = transacaoService.processarResgateAluno(auth.getName(), request.vantagemId());
@@ -77,7 +78,7 @@ public class TransacaoController {
                 Instant.now()
         ));
 
-        return ResponseEntity.ok(resultado.codigoCupom());
+        return ResponseEntity.ok(new ResgatarVantagemResponse(resultado.codigoCupom()));
     }
     
     @GetMapping("/meu-extrato")

@@ -88,8 +88,6 @@ function HomePage() {
   <div className="balance-card">
     <div className="balance-header">
       <span>Saldo disponível</span>
-      
-    </div>
       <button
         type="button"
         className="toggle-saldo-btn"
@@ -112,6 +110,7 @@ function HomePage() {
           </svg>
         )}
       </button>
+    </div>
 
     <div className="balance-amount-container">
       <div className="balance-amount">

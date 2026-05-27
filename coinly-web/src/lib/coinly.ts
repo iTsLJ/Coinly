@@ -99,6 +99,10 @@ export type EnviarMoedasResponse = {
   status: 'EM_PROCESSAMENTO'
 }
 
+export type ResgatarVantagemResponse = {
+  cupom: string
+}
+
 export type TransacaoResponse = {
   id: number
   data: string
@@ -170,7 +174,7 @@ export const coinlyApi = {
     }),
 
   resgatarVantagem: (vantagemId: number) =>
-    api.post<string>('/api/transacoes/resgatar-vantagem', {
+    api.post<ResgatarVantagemResponse>('/api/transacoes/resgatar-vantagem', {
       vantagemId,
     }),
 
