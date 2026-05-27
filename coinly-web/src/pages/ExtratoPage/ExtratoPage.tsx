@@ -60,7 +60,11 @@ export default function ExtratoPage() {
                       : "badge resgate"
                   }
                 >
-                  {transacao.tipo}
+                  {transacao.tipo === "RESGATE"
+                    ? "RESGATE"
+                    : transacao.entrada
+                    ? "RECEBIDO"
+                    : "ENVIADO"}
                 </span>
               </div>
 
