@@ -55,7 +55,7 @@ export default function ExtratoPage() {
               <div>
                 <span
                   className={
-                    transacao.tipo === "ENVIO"
+                    transacao.entrada
                       ? "badge envio"
                       : "badge resgate"
                   }
@@ -65,7 +65,7 @@ export default function ExtratoPage() {
               </div>
 
               <div className="quantidade">
-                {transacao.tipo === "ENVIO" ? "+" : "-"}
+                {transacao.entrada ? "+" : "-"}
                 {transacao.valor}
               </div>
 

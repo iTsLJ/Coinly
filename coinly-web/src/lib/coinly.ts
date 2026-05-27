@@ -99,6 +99,7 @@ export type TransacaoResponse = {
   data: string
   valor: number
   tipo: 'ENVIO' | 'RESGATE'
+  entrada: boolean
   descricao: string
   origem: string
   destino: string

@@ -89,9 +89,9 @@ public class TransacaoService {
                 .findByRemetenteOrDestinatarioOrderByDataDesc(usuario, usuario);
 
         return transacoes.stream().map(t -> {
-            String tipo = (t.getRemetente() != null && 
-                          t.getRemetente().getId().equals(usuario.getId())) 
-                          ? "ENVIO" : "RESGATE";
+            String tipo = t.getTipoOperacao() != null ? t.getTipoOperacao().name() : "ENVIO";
+            boolean entrada = t.getDestinatario() != null
+                    && t.getDestinatario().getId().equals(usuario.getId());
 
             String origem = t.getRemetente() != null ? t.getRemetente().getNome() : "Sistema";
             String destino = t.getDestinatario() != null ? t.getDestinatario().getNome() : "Sistema";
@@ -101,6 +101,7 @@ public class TransacaoService {
                 t.getData(),
                 t.getValor(),
                 tipo,
+                entrada,
                 t.getDescricao(),
                 origem,
                 destino
