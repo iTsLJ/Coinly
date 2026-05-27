@@ -20,21 +20,4 @@ public class MeResponse {
     private String email;
     private List<String> roles;
     private String tipo;
-	public MeResponse() {
-		super();
-	}
-	public MeResponse(Long id, Long alunoId, Long professorId, Long empresaId, String nome, String email,
-			List<String> roles, String tipo) {
-		super();
-		this.id = id;
-		this.alunoId = alunoId;
-		this.professorId = professorId;
-		this.empresaId = empresaId;
-		this.nome = nome;
-		this.email = email;
-		this.roles = roles;
-		this.tipo = tipo;
-	}
-    
-    
 }
