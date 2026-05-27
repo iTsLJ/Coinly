@@ -30,13 +30,13 @@ function HomePage() {
 
         if (user.tipo === 'ALUNO' && user.alunoId) {
           const res = await coinlyApi.getAlunoById(user.alunoId)
-          data = { ...data, ...res.data }
+          data = { ...data, ...res }
         } else if (user.tipo === 'PROFESSOR' && user.professorId) {
           const res = await coinlyApi.getProfessorById(user.professorId)
-          data = { ...data, ...res.data }
+          data = { ...data, ...res }
         } else if (user.tipo === 'EMPRESA' && user.empresaId) {
           const res = await coinlyApi.getEmpresaById(user.empresaId)
-          data = { ...data, ...res.data }
+          data = { ...data, ...res }
         }
 
         setFullUser(data)
