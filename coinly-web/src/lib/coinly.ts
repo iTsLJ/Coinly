@@ -196,6 +196,7 @@ export const coinlyApi = {
 
   getAlunoById: (id: number) => api.get<any>(`/api/alunos/${id}`),
 getProfessorById: (id: number) => api.get<any>(`/api/professores/${id}`),
+meuProfessor: () => api.get<ProfessorResponse>('/api/professores/me'),
 getEmpresaById: (id: number) => api.get<any>(`/api/empresas/${id}`),
 
 }

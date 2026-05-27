@@ -33,8 +33,8 @@ export default function ExtratoPage() {
         if (user.tipo === "ALUNO" && user.alunoId) {
           const res = await coinlyApi.getAlunoById(user.alunoId);
           setSaldo(res?.saldoMoedas ?? null);
-        } else if (user.tipo === "PROFESSOR" && user.professorId) {
-          const res = await coinlyApi.getProfessorById(user.professorId);
+        } else if (user.tipo === "PROFESSOR") {
+          const res = await coinlyApi.meuProfessor();
           setSaldo(res?.saldoMoedas ?? null);
         }
       } catch (error) {

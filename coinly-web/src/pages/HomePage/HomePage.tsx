@@ -31,8 +31,8 @@ function HomePage() {
         if (user.tipo === 'ALUNO' && user.alunoId) {
           const res = await coinlyApi.getAlunoById(user.alunoId)
           data = { ...data, ...res }
-        } else if (user.tipo === 'PROFESSOR' && user.professorId) {
-          const res = await coinlyApi.getProfessorById(user.professorId)
+        } else if (user.tipo === 'PROFESSOR') {
+          const res = await coinlyApi.meuProfessor()
           data = { ...data, ...res }
         } else if (user.tipo === 'EMPRESA' && user.empresaId) {
           const res = await coinlyApi.getEmpresaById(user.empresaId)
@@ -84,10 +84,10 @@ function HomePage() {
     <p>Sua moeda estudantil</p>
   </div>
 
-  {isAluno && (
+  {(isAluno || isProfessor) && (
   <div className="balance-card">
     <div className="balance-header">
-      <span>Saldo disponível</span>
+      <span>{isProfessor ? 'Saldo para distribuir' : 'Saldo disponível'}</span>
       <button
         type="button"
         className="toggle-saldo-btn"
@@ -138,10 +138,23 @@ function HomePage() {
 
         <div className="home-cards">
           {isProfessor && (
-            <div className="home-card" onClick={() => navigate('/enviar-moedas')}>
-              <h3>👨‍🏫 Enviar Moedas</h3>
-              <p>Reconheça o mérito dos seus alunos distribuindo Coinlys.</p>
-            </div>
+            <>
+              <div className="home-card" onClick={() => navigate('/enviar-moedas')}>
+                <h3>👨‍🏫 Enviar Moedas</h3>
+                <p>Reconheça o mérito dos seus alunos distribuindo Coinlys.</p>
+              </div>
+
+              <div className="home-card">
+                <h3>💸 Ações Rápidas</h3>
+                <p>Acompanhe seu saldo e o histórico de movimentações.</p>
+                <button
+                  className="btn-secondary"
+                  onClick={() => navigate('/extrato')}
+                >
+                  Ver Extrato Completo
+                </button>
+              </div>
+            </>
           )}
 
           {isAluno && (
