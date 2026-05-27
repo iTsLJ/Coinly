@@ -17,6 +17,11 @@ public final class EnvioMoedasRouting {
 
     public static final String EVENT_EMAIL_QUEUE = "envio-moedas.events.email";
 
+    // Resgate de vantagem (financeiro sincrono; e-mails via evento)
+    public static final String RESGATE_EVENT_ROUTING_PREFIX = "resgate-vantagem.";
+    public static final String RESGATE_EVENT_SUCESSO_KEY = RESGATE_EVENT_ROUTING_PREFIX + "sucesso";
+    public static final String RESGATE_EVENT_EMAIL_QUEUE = "resgate-vantagem.events.email";
+
     private EnvioMoedasRouting() {
     }
 }

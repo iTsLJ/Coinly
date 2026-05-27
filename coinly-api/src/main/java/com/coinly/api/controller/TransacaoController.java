@@ -21,6 +21,9 @@ import com.coinly.api.dto.transacao.TransacaoResponse;
 import com.coinly.api.dto.vantagem.ResgatarVantagemRequest;
 import com.coinly.api.messaging.EnviarMoedasCommand;
 import com.coinly.api.messaging.EnvioMoedasPublisher;
+import com.coinly.api.messaging.ResgateResultado;
+import com.coinly.api.messaging.ResgateVantagemPublisher;
+import com.coinly.api.messaging.VantagemResgatadaEvent;
 import com.coinly.api.service.TransacaoService;
 
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +39,8 @@ public class TransacaoController {
     private TransacaoService transacaoService;
 	@Autowired
     private EnvioMoedasPublisher envioMoedasPublisher;
+	@Autowired
+    private ResgateVantagemPublisher resgateVantagemPublisher;
 
 	@PostMapping("/enviar-moedas")
 	@PreAuthorize("hasRole('PROFESSOR')")
@@ -58,8 +63,21 @@ public class TransacaoController {
     @PostMapping("/resgatar-vantagem")
     @PreAuthorize("hasRole('ALUNO')")
     public ResponseEntity<String> resgatarVantagem(@RequestBody  @Valid ResgatarVantagemRequest request, Authentication auth) {
-        String cupom = transacaoService.processarResgateAluno(auth.getName(), request.vantagemId());
-        return ResponseEntity.ok(cupom);
+        // Financeiro e cupom sao sincronos (cupom volta na resposta);
+        // os e-mails sao despachados de forma assincrona via evento.
+        ResgateResultado resultado = transacaoService.processarResgateAluno(auth.getName(), request.vantagemId());
+
+        resgateVantagemPublisher.publicarResgate(new VantagemResgatadaEvent(
+                resultado.transacaoId(),
+                resultado.emailAluno(),
+                resultado.nomeAluno(),
+                resultado.emailParceiro(),
+                resultado.nomeVantagem(),
+                resultado.codigoCupom(),
+                Instant.now()
+        ));
+
+        return ResponseEntity.ok(resultado.codigoCupom());
     }
     
     @GetMapping("/meu-extrato")

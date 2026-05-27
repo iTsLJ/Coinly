@@ -18,6 +18,7 @@ import com.coinly.api.exception.BusinessException;
 import com.coinly.api.exception.ResourceNotFoundException;
 import com.coinly.api.messaging.EnvioComandoResultado;
 import com.coinly.api.messaging.EnviarMoedasCommand;
+import com.coinly.api.messaging.ResgateResultado;
 import com.coinly.api.repository.ProcessedCommandRepository;
 import com.coinly.api.repository.TransacaoRepository;
 import com.coinly.api.repository.UsuarioRepository;
@@ -34,8 +35,6 @@ public class TransacaoService {
     private ProfessorService professorService;
 	@Autowired
     private VantagemService vantagemService;
-	@Autowired
-    private NotificacaoService notificacaoService;
 	@Autowired
     private TransacaoRepository transacaoRepository;
 	@Autowired UsuarioRepository usuarioRepository;
@@ -78,7 +77,7 @@ public class TransacaoService {
     }
 
     @Transactional
-    public String processarResgateAluno(String emailAluno, Long vantagemId) {
+    public ResgateResultado processarResgateAluno(String emailAluno, Long vantagemId) {
         Aluno aluno = alunoService.buscarPorEmail(emailAluno);
         Vantagem vantagem = vantagemService.buscarEntidadePorId(vantagemId);
 
@@ -94,10 +93,16 @@ public class TransacaoService {
         troca.setCodigoCupom(codigoCupom);
         transacaoRepository.save(troca);
 
-        notificacaoService.enviarCupomResgate(aluno.getEmail(), vantagem.getNome(), codigoCupom);
-        notificacaoService.notificarParceiroResgate(vantagem.getEmpresa().getEmail(), aluno.getNome(), vantagem.getNome(), codigoCupom);
-
-        return codigoCupom;
+        // E-mails (cupom para o aluno + notificacao ao parceiro) sao enviados de forma
+        // assincrona pelo consumer, a partir do evento publicado apos o commit.
+        return new ResgateResultado(
+                troca.getId(),
+                codigoCupom,
+                aluno.getEmail(),
+                aluno.getNome(),
+                vantagem.getEmpresa().getEmail(),
+                vantagem.getNome()
+        );
     }
     
     

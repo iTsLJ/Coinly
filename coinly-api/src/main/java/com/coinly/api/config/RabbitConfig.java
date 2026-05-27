@@ -75,6 +75,18 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue resgateVantagemEventEmailQueue() {
+        return QueueBuilder.durable(EnvioMoedasRouting.RESGATE_EVENT_EMAIL_QUEUE).build();
+    }
+
+    @Bean
+    public Binding resgateVantagemEventEmailBinding(Queue resgateVantagemEventEmailQueue, TopicExchange eventsExchange) {
+        return BindingBuilder.bind(resgateVantagemEventEmailQueue)
+                .to(eventsExchange)
+                .with(EnvioMoedasRouting.RESGATE_EVENT_ROUTING_PREFIX + "*");
+    }
+
+    @Bean
     public MessageConverter jsonMessageConverter() {
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(mapper);
