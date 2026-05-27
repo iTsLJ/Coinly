@@ -5,6 +5,7 @@ public record ResgateResultado(
         String codigoCupom,
         String emailAluno,
         String nomeAluno,
+        int saldoAluno,
         String emailParceiro,
         String nomeVantagem
 ) {}

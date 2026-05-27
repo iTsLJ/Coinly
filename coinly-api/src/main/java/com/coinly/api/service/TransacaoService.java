@@ -64,6 +64,9 @@ public class TransacaoService {
             return new EnvioComandoResultado.Falha("Saldo insuficiente para distribuição.");
         }
 
+        int saldoProfessorNovo = professor.getSaldoMoedas() - command.quantidade();
+        int saldoAlunoNovo = aluno.getSaldoMoedas() + command.quantidade();
+
         professorService.deduzirSaldo(professor.getId(), command.quantidade());
         alunoService.adicionarSaldo(aluno.getId(), command.quantidade());
 
@@ -73,7 +76,14 @@ public class TransacaoService {
 
         processedCommandRepository.save(new ProcessedCommand(command.commandId(), TIPO_COMANDO_ENVIO));
 
-        return new EnvioComandoResultado.Sucesso(transacao.getId(), aluno.getEmail(), aluno.getNome());
+        return new EnvioComandoResultado.Sucesso(
+                transacao.getId(),
+                professor.getEmail(),
+                saldoProfessorNovo,
+                aluno.getEmail(),
+                aluno.getNome(),
+                saldoAlunoNovo
+        );
     }
 
     @Transactional
@@ -85,6 +95,7 @@ public class TransacaoService {
             throw new BusinessException("Saldo insuficiente para resgate desta vantagem.");
         }
 
+        int saldoAlunoNovo = aluno.getSaldoMoedas() - vantagem.getCustoMoedas();
         alunoService.deduzirSaldo(aluno.getId(), vantagem.getCustoMoedas());
         String codigoCupom = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 
@@ -100,6 +111,7 @@ public class TransacaoService {
                 codigoCupom,
                 aluno.getEmail(),
                 aluno.getNome(),
+                saldoAlunoNovo,
                 vantagem.getEmpresa().getEmail(),
                 vantagem.getNome()
         );

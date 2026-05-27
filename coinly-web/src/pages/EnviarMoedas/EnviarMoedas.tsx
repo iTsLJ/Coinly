@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { coinlyApi, type AlunoResponse } from '../../lib/coinly'
 import { useAuth } from '../../hooks/useAuth'
+import { useSaldoStream } from '../../hooks/useSaldoStream'
 import './EnviarMoedas.css'
 
 function EnviarMoedas() {
@@ -31,6 +32,8 @@ function EnviarMoedas() {
     }
     carregarSaldo()
   }, [user])
+
+  useSaldoStream(useCallback((novoSaldo: number) => setSaldo(novoSaldo), []))
 
   const quantidadeNum = Number(form.quantidade)
   const alunoSelecionado = alunos.find((a) => String(a.id) === form.alunoId)

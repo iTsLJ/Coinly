@@ -1,8 +1,9 @@
 import "./ExtratoPage.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { coinlyApi, type TransacaoResponse } from "../../lib/coinly";
 import { useAuth } from "../../hooks/useAuth";
+import { useSaldoStream } from "../../hooks/useSaldoStream";
 
 export default function ExtratoPage() {
   const navigate = useNavigate();
@@ -43,6 +44,14 @@ export default function ExtratoPage() {
     }
     carregarSaldo();
   }, [user]);
+
+  useSaldoStream(
+    useCallback((novoSaldo: number) => {
+      setSaldo(novoSaldo);
+      // novo saldo significa nova movimentação; recarrega o histórico
+      coinlyApi.getExtrato().then(setTransacoes).catch(console.error);
+    }, [])
+  );
 
   function formatarData(data: string) {
     return new Date(data).toLocaleString("pt-BR");

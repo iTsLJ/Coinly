@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { useSaldoStream } from '../../hooks/useSaldoStream'
 import { coinlyApi } from '../../lib/coinly'
 import './HomePage.css'
 
@@ -50,6 +51,12 @@ function HomePage() {
 
     if (user) loadProfile()
   }, [user])
+
+  useSaldoStream(
+    useCallback((novoSaldo: number) => {
+      setFullUser((prev: any) => ({ ...(prev ?? {}), saldoMoedas: novoSaldo }))
+    }, [])
+  )
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {

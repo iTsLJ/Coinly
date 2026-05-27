@@ -24,6 +24,7 @@ import com.coinly.api.messaging.EnviarMoedasCommand;
 import com.coinly.api.messaging.EnvioMoedasPublisher;
 import com.coinly.api.messaging.ResgateResultado;
 import com.coinly.api.messaging.ResgateVantagemPublisher;
+import com.coinly.api.messaging.SaldoSseService;
 import com.coinly.api.messaging.VantagemResgatadaEvent;
 import com.coinly.api.service.TransacaoService;
 
@@ -42,6 +43,8 @@ public class TransacaoController {
     private EnvioMoedasPublisher envioMoedasPublisher;
 	@Autowired
     private ResgateVantagemPublisher resgateVantagemPublisher;
+	@Autowired
+    private SaldoSseService saldoSseService;
 
 	@PostMapping("/enviar-moedas")
 	@PreAuthorize("hasRole('PROFESSOR')")
@@ -77,6 +80,9 @@ public class TransacaoController {
                 resultado.codigoCupom(),
                 Instant.now()
         ));
+
+        // Atualizacao de saldo em tempo real (SSE) para o aluno
+        saldoSseService.enviarSaldo(resultado.emailAluno(), resultado.saldoAluno());
 
         return ResponseEntity.ok(new ResgatarVantagemResponse(resultado.codigoCupom()));
     }

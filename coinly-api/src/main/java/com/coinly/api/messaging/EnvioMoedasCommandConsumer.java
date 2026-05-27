@@ -16,10 +16,14 @@ public class EnvioMoedasCommandConsumer {
 
     private final TransacaoService transacaoService;
     private final EnvioMoedasPublisher publisher;
+    private final SaldoSseService saldoSseService;
 
-    public EnvioMoedasCommandConsumer(TransacaoService transacaoService, EnvioMoedasPublisher publisher) {
+    public EnvioMoedasCommandConsumer(TransacaoService transacaoService,
+                                      EnvioMoedasPublisher publisher,
+                                      SaldoSseService saldoSseService) {
         this.transacaoService = transacaoService;
         this.publisher = publisher;
+        this.saldoSseService = saldoSseService;
     }
 
     @RabbitListener(queues = EnvioMoedasRouting.COMMAND_QUEUE)
@@ -36,14 +40,19 @@ public class EnvioMoedasCommandConsumer {
         }
 
         switch (resultado) {
-            case EnvioComandoResultado.Sucesso s -> publisher.publicarSucesso(new MoedasEnviadasEvent(
-                    command.commandId(),
-                    s.transacaoId(),
-                    s.emailAluno(),
-                    s.nomeAluno(),
-                    command.quantidade(),
-                    Instant.now()
-            ));
+            case EnvioComandoResultado.Sucesso s -> {
+                publisher.publicarSucesso(new MoedasEnviadasEvent(
+                        command.commandId(),
+                        s.transacaoId(),
+                        s.emailAluno(),
+                        s.nomeAluno(),
+                        command.quantidade(),
+                        Instant.now()
+                ));
+                // Atualizacao de saldo em tempo real (SSE) para remetente e destinatario
+                saldoSseService.enviarSaldo(s.emailProfessor(), s.saldoProfessor());
+                saldoSseService.enviarSaldo(s.emailAluno(), s.saldoAluno());
+            }
             case EnvioComandoResultado.Falha f -> publisher.publicarFalha(new EnvioMoedasFalhouEvent(
                     command.commandId(),
                     command.emailProfessor(),
