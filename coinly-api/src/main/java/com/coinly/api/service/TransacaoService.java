@@ -7,15 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.coinly.api.domain.Aluno;
+import com.coinly.api.domain.ProcessedCommand;
 import com.coinly.api.domain.Professor;
 import com.coinly.api.domain.TipoOperacao;
 import com.coinly.api.domain.Transacao;
 import com.coinly.api.domain.Usuario;
 import com.coinly.api.domain.Vantagem;
-import com.coinly.api.dto.enviarMoedas.EnviarMoedasRequest;
 import com.coinly.api.dto.transacao.TransacaoResponse;
 import com.coinly.api.exception.BusinessException;
 import com.coinly.api.exception.ResourceNotFoundException;
+import com.coinly.api.messaging.EnvioComandoResultado;
+import com.coinly.api.messaging.EnviarMoedasCommand;
+import com.coinly.api.repository.ProcessedCommandRepository;
 import com.coinly.api.repository.TransacaoRepository;
 import com.coinly.api.repository.UsuarioRepository;
 
@@ -36,24 +39,42 @@ public class TransacaoService {
 	@Autowired
     private TransacaoRepository transacaoRepository;
 	@Autowired UsuarioRepository usuarioRepository;
+	@Autowired
+    private ProcessedCommandRepository processedCommandRepository;
+
+    private static final String TIPO_COMANDO_ENVIO = "ENVIAR_MOEDAS";
 
     @Transactional
-    public void processarEnvioProfessor(String emailProfessor, EnviarMoedasRequest request) {
-        Professor professor = professorService.buscarPorEmail(emailProfessor);
-        if (professor.getSaldoMoedas() < request.quantidade()) {
-            throw new BusinessException("Saldo insuficiente para distribuição.");
+    public EnvioComandoResultado processarEnvioComando(EnviarMoedasCommand command) {
+        if (processedCommandRepository.existsByCommandId(command.commandId())) {
+            return new EnvioComandoResultado.JaProcessado();
         }
 
-        Aluno aluno = alunoService.findById(request.alunoId());
+        Professor professor;
+        Aluno aluno;
+        try {
+            professor = professorService.buscarPorEmail(command.emailProfessor());
+            aluno = alunoService.findById(command.alunoId());
+        } catch (ResourceNotFoundException e) {
+            processedCommandRepository.save(new ProcessedCommand(command.commandId(), TIPO_COMANDO_ENVIO));
+            return new EnvioComandoResultado.Falha(e.getMessage());
+        }
 
-        professorService.deduzirSaldo(professor.getId(), request.quantidade());
-        alunoService.adicionarSaldo(aluno.getId(), request.quantidade());
+        if (professor.getSaldoMoedas() < command.quantidade()) {
+            processedCommandRepository.save(new ProcessedCommand(command.commandId(), TIPO_COMANDO_ENVIO));
+            return new EnvioComandoResultado.Falha("Saldo insuficiente para distribuição.");
+        }
 
-        Transacao transacao = new Transacao(professor, aluno, request.quantidade(), request.mensagem());
+        professorService.deduzirSaldo(professor.getId(), command.quantidade());
+        alunoService.adicionarSaldo(aluno.getId(), command.quantidade());
+
+        Transacao transacao = new Transacao(professor, aluno, command.quantidade(), command.mensagem());
         transacao.setTipoOperacao(TipoOperacao.ENVIO);
         transacaoRepository.save(transacao);
 
-        notificacaoService.notificarRecebimentoMoedas(aluno.getEmail(), aluno.getNome(), request.quantidade());
+        processedCommandRepository.save(new ProcessedCommand(command.commandId(), TIPO_COMANDO_ENVIO));
+
+        return new EnvioComandoResultado.Sucesso(transacao.getId(), aluno.getEmail(), aluno.getNome());
     }
 
     @Transactional

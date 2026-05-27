@@ -21,7 +21,7 @@ function EnviarMoedas() {
         form.quantidade,
         form.mensagem
       )
-      alert('Moedas enviadas com sucesso!')
+      alert('Envio recebido! O processamento e o e-mail acontecem em segundo plano.')
       setForm({ alunoId: '', quantidade: 0, mensagem: '' })
     } catch (err: any) {
       alert(err.payload?.message || 'Erro ao enviar moedas')

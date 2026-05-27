@@ -1,10 +1,13 @@
 package com.coinly.api.controller;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.coinly.api.dto.enviarMoedas.EnviarMoedasRequest;
+import com.coinly.api.dto.enviarMoedas.EnviarMoedasResponse;
 import com.coinly.api.dto.transacao.TransacaoResponse;
 import com.coinly.api.dto.vantagem.ResgatarVantagemRequest;
+import com.coinly.api.messaging.EnviarMoedasCommand;
+import com.coinly.api.messaging.EnvioMoedasPublisher;
 import com.coinly.api.service.TransacaoService;
 
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,13 +34,26 @@ public class TransacaoController {
 
 	@Autowired
     private TransacaoService transacaoService;
+	@Autowired
+    private EnvioMoedasPublisher envioMoedasPublisher;
 
-	 @PostMapping("/enviar-moedas")
-	    @PreAuthorize("hasRole('PROFESSOR')")
-	    public ResponseEntity<Void> enviarMoedas(@RequestBody  @Valid EnviarMoedasRequest request,Authentication auth) {
-	        transacaoService.processarEnvioProfessor(auth.getName(), request);
-	        return ResponseEntity.ok().build();
-	    }
+	@PostMapping("/enviar-moedas")
+	@PreAuthorize("hasRole('PROFESSOR')")
+	public ResponseEntity<EnviarMoedasResponse> enviarMoedas(@RequestBody @Valid EnviarMoedasRequest request,
+	                                                          Authentication auth) {
+	    String commandId = UUID.randomUUID().toString();
+	    EnviarMoedasCommand command = new EnviarMoedasCommand(
+	            commandId,
+	            auth.getName(),
+	            request.alunoId(),
+	            request.quantidade(),
+	            request.mensagem(),
+	            Instant.now()
+	    );
+	    envioMoedasPublisher.publicarComando(command);
+	    return ResponseEntity.status(HttpStatus.ACCEPTED)
+	            .body(new EnviarMoedasResponse(commandId, "EM_PROCESSAMENTO"));
+	}
 
     @PostMapping("/resgatar-vantagem")
     @PreAuthorize("hasRole('ALUNO')")

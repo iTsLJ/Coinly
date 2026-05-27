@@ -94,6 +94,11 @@ export type MeResponse = {
   roles: string[];
   tipo: 'ALUNO' | 'PROFESSOR' | 'EMPRESA';
 };
+export type EnviarMoedasResponse = {
+  commandId: string
+  status: 'EM_PROCESSAMENTO'
+}
+
 export type TransacaoResponse = {
   id: number
   data: string
@@ -155,13 +160,13 @@ export const coinlyApi = {
 
   enviarMoedas: (
     alunoId: number,
-    valor: number,
-    motivo: string
+    quantidade: number,
+    mensagem: string
   ) =>
-    api.post('/api/transacoes/enviar-moedas', {
+    api.post<EnviarMoedasResponse>('/api/transacoes/enviar-moedas', {
       alunoId,
-      valor,
-      motivo,
+      quantidade,
+      mensagem,
     }),
 
   resgatarVantagem: (vantagemId: number) =>

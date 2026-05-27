@@ -1,0 +1,22 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: coinly-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: coinly
+      RABBITMQ_DEFAULT_PASS: coinly
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: coinly-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  rabbitmq-data:
