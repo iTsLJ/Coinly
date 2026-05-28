@@ -7,6 +7,7 @@ public record TransacaoResponse(
     LocalDateTime data,
     int valor,
     String tipo,
+    boolean entrada,
     String descricao,
     String origem,
     String destino

@@ -84,12 +84,31 @@ export type LoginResponse = {
   username: string
   roles: string[]
 }
+export type MeResponse = {
+  id: number;
+  alunoId?: number;
+  professorId?: number;
+  empresaId?: number;
+  nome: string;
+  email: string;
+  roles: string[];
+  tipo: 'ALUNO' | 'PROFESSOR' | 'EMPRESA';
+};
+export type EnviarMoedasResponse = {
+  commandId: string
+  status: 'EM_PROCESSAMENTO'
+}
+
+export type ResgatarVantagemResponse = {
+  cupom: string
+}
 
 export type TransacaoResponse = {
   id: number
   data: string
   valor: number
   tipo: 'ENVIO' | 'RESGATE'
+  entrada: boolean
   descricao: string
   origem: string
   destino: string
@@ -99,17 +118,23 @@ export type VantagemResponse = {
   id: number
   nome: string
   descricao: string
-  custo: number
+  custoMoedas: number
   fotoUrl?: string
   empresaNome: string
 }
+export type VantagemRequest = {
+  nome: string;
+  descricao: string;
+  fotoUrl?: string;
+  custoMoedas: number;
+};
 
 export const coinlyApi = {
   login: (request: LoginRequest) =>
     api.post<LoginResponse>('/auth/login', request),
 
   me: () => api.get<LoginResponse>('/auth/me'),
-
+  profile: () => api.get<MeResponse>('/auth/profile'),
   listInstituicoes: () =>
     api.get<Instituicao[]>('/api/instituicoes'),
 
@@ -139,23 +164,39 @@ export const coinlyApi = {
 
   enviarMoedas: (
     alunoId: number,
-    valor: number,
-    motivo: string
+    quantidade: number,
+    mensagem: string
   ) =>
-    api.post('/api/transacoes/enviar-moedas', {
+    api.post<EnviarMoedasResponse>('/api/transacoes/enviar-moedas', {
       alunoId,
-      valor,
-      motivo,
+      quantidade,
+      mensagem,
     }),
 
   resgatarVantagem: (vantagemId: number) =>
-    api.post<string>('/api/transacoes/resgatar-vantagem', {
+    api.post<ResgatarVantagemResponse>('/api/transacoes/resgatar-vantagem', {
       vantagemId,
     }),
 
-  listarVantagens: () =>
+  listarVantagens: () => 
     api.get<VantagemResponse[]>('/api/vantagens'),
+  listarMinhasVantagens: () =>
+  api.get<VantagemResponse[]>('/api/vantagens/minhas'),
+
+
+  criarVantagem: (request: VantagemRequest) =>
+    api.post<VantagemResponse>('/api/vantagens', request),
+
+  deletarVantagem: (id: number) =>
+    api.delete<void>(`/api/vantagens/${id}`),
+  
 
   getExtrato: () =>
     api.get<TransacaoResponse[]>('/api/transacoes/meu-extrato'),
+
+  getAlunoById: (id: number) => api.get<any>(`/api/alunos/${id}`),
+getProfessorById: (id: number) => api.get<any>(`/api/professores/${id}`),
+meuProfessor: () => api.get<ProfessorResponse>('/api/professores/me'),
+getEmpresaById: (id: number) => api.get<any>(`/api/empresas/${id}`),
+
 }

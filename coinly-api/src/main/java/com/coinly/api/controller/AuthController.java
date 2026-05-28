@@ -1,8 +1,12 @@
 package com.coinly.api.controller;
 
+import com.coinly.api.domain.Aluno;
+import com.coinly.api.domain.EmpresaParceira;
+import com.coinly.api.domain.Professor;
 import com.coinly.api.domain.Usuario;
 import com.coinly.api.dto.auth.LoginRequest;
 import com.coinly.api.dto.auth.LoginResponse;
+import com.coinly.api.dto.auth.MeResponse;
 import com.coinly.api.dto.auth.TrocarSenhaRequest;
 import com.coinly.api.exception.BusinessException;
 import com.coinly.api.exception.ResourceNotFoundException;
@@ -70,6 +74,57 @@ public class AuthController {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
         return new LoginResponse(null, null, auth.getName(), roles);
+    }
+    @GetMapping("/profile")
+    public MeResponse profile() {
+        Authentication auth = autenticacaoAtual();
+        String email = auth.getName();
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+
+        List<String> roles = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        if (usuario instanceof Aluno aluno) {
+            return new MeResponse(
+                usuario.getId(),
+                aluno.getId(),
+                null,
+                null,
+                usuario.getNome(),
+                usuario.getEmail(),
+                roles,
+                "ALUNO"
+            );
+        } 
+        else if (usuario instanceof Professor professor) {
+            return new MeResponse(
+                usuario.getId(),
+                null,
+                professor.getId(),
+                null,
+                usuario.getNome(),
+                usuario.getEmail(),
+                roles,
+                "PROFESSOR"
+            );
+        } 
+        else if (usuario instanceof EmpresaParceira empresa) {
+            return new MeResponse(
+                usuario.getId(),
+                null,
+                null,
+                empresa.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                roles,
+                "EMPRESA"
+            );
+        }
+
+        throw new IllegalStateException("Tipo de usuário não reconhecido");
     }
 
     @PostMapping("/trocar-senha")

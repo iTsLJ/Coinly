@@ -5,31 +5,21 @@ import Cadastro from './pages/Cadastro/Cadastro'
 
 import HomePage from './pages/HomePage/HomePage'
 import EnviarMoedas from './pages/EnviarMoedas/EnviarMoedas'
-import CatalogoVantagens from './pages/CatalogoVantagens/CatalogoVantagens'
-import ExtratoPage from './pages/Extrato/ExtratoPage'
+import ExtratoPage from './pages/ExtratoPage/ExtratoPage'
+import Vantagens from './pages/Vantagens/Vantagens'
+import EmpresaVantagens from './pages/EmpresaVantagens/EmpresaVantagens' 
+
 
 import { useAuth } from './hooks/useAuth'
 
-function ProtectedRoute({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div style={{ padding: '50px', textAlign: 'center' }}>
-        Carregando...
-      </div>
-    )
+    return <div style={{ padding: '50px', textAlign: 'center' }}>Carregando...</div>
   }
 
-  return isAuthenticated ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/login" replace />
-  )
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function AppRoutes() {
@@ -37,24 +27,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={
-          <Login
-            onSignUp={() => navigate('/cadastro')}
-            onSuccess={() => navigate('/')}
-          />
-        }
-      />
-
-      <Route
-        path="/cadastro"
-        element={
-          <Cadastro
-            onBackToLogin={() => navigate('/login')}
-          />
-        }
-      />
+      <Route path="/login" element={<Login onSignUp={() => navigate('/cadastro')} />} />
+      <Route path="/cadastro" element={<Cadastro onBackToLogin={() => navigate('/login')} />} />
 
       <Route
         path="/"
@@ -78,7 +52,16 @@ function AppRoutes() {
         path="/vantagens"
         element={
           <ProtectedRoute>
-            <CatalogoVantagens />
+            <Vantagens />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/minhas-vantagens"
+        element={
+          <ProtectedRoute>
+            <EmpresaVantagens />
           </ProtectedRoute>
         }
       />
@@ -91,11 +74,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      <Route
-        path="*"
-        element={<Navigate to="/login" replace />}
-      />
+<Route path="/extrato" element={<ExtratoPage />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }
