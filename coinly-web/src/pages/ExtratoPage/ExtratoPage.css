@@ -1,23 +1,24 @@
 :root {
   --coinly-300: #c4b5fd;
-  --coinly-400: #a855f7;
-  --coinly-500: #8b5cf6;
-  --coinly-600: #7c3aed;
+  --coinly-400: #a78bfa;
+  --coinly-500: #6c4dff;
+  --coinly-600: #5a3ee6;
+  --coinly-700: #4d31cc;
   --text-primary: #f1f0ff;
   --text-secondary: #b9b8d6;
   --text-muted: #8584a8;
-  --green: #34d399;
+  --green: #22c55e;
   --red: #fb7185;
 }
 
 .extrato-wrapper {
   min-height: 100vh;
   background:
-    radial-gradient(900px 600px at 12% -5%, rgba(139, 92, 246, 0.26), transparent 60%),
-    radial-gradient(800px 600px at 95% 8%, rgba(168, 85, 247, 0.18), transparent 55%),
-    linear-gradient(160deg, #0a0a16 0%, #100d24 55%, #0d0a1f 100%);
+    radial-gradient(900px 600px at 12% -5%, rgba(108, 77, 255, 0.24), transparent 60%),
+    radial-gradient(800px 600px at 95% 8%, rgba(108, 77, 255, 0.16), transparent 55%),
+    linear-gradient(160deg, #0d0b1e 0%, #130f2a 55%, #0d0b1e 100%);
   background-attachment: fixed;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

@@ -1,5 +1,6 @@
 package com.coinly.api.controller;
 
+import com.coinly.api.domain.Administrador;
 import com.coinly.api.domain.Aluno;
 import com.coinly.api.domain.EmpresaParceira;
 import com.coinly.api.domain.Professor;
@@ -121,6 +122,19 @@ public class AuthController {
                 usuario.getEmail(),
                 roles,
                 "EMPRESA"
+            );
+        }
+
+        if (usuario instanceof Administrador) {
+            return new MeResponse(
+                usuario.getId(),
+                null,
+                null,
+                null,
+                usuario.getNome(),
+                usuario.getEmail(),
+                roles,
+                "ADMIN"
             );
         }
 

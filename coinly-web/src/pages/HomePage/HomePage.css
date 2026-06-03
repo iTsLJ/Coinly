@@ -1,11 +1,12 @@
 :root {
-  --coinly-50: #f5f3ff;
+  --coinly-50: #f0edff;
   --coinly-300: #c4b5fd;
-  --coinly-400: #a855f7;
-  --coinly-500: #8b5cf6;
-  --coinly-600: #7c3aed;
-  --coinly-700: #6d28d9;
-  --ink: #0a0a16;
+  --coinly-400: #a78bfa;
+  --coinly-500: #6c4dff;
+  --coinly-600: #5a3ee6;
+  --coinly-700: #4d31cc;
+  --coinly-yellow: #ffc633;
+  --ink: #0d0b1e;
   --text-primary: #f1f0ff;
   --text-secondary: #b9b8d6;
   --text-muted: #8584a8;
@@ -14,12 +15,12 @@
 .home {
   min-height: 100vh;
   background:
-    radial-gradient(900px 600px at 12% -5%, rgba(139, 92, 246, 0.28), transparent 60%),
-    radial-gradient(800px 600px at 95% 10%, rgba(168, 85, 247, 0.20), transparent 55%),
-    linear-gradient(160deg, #0a0a16 0%, #100d24 55%, #0d0a1f 100%);
+    radial-gradient(900px 600px at 12% -5%, rgba(108, 77, 255, 0.28), transparent 60%),
+    radial-gradient(800px 600px at 95% 10%, rgba(108, 77, 255, 0.18), transparent 55%),
+    linear-gradient(160deg, #0d0b1e 0%, #130f2a 55%, #0d0b1e 100%);
   background-attachment: fixed;
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
@@ -27,7 +28,7 @@
 
 /* ---------- Header ---------- */
 .home-header {
-  padding: 18px 32px;
+  padding: 16px 32px;
   background: rgba(12, 10, 26, 0.55);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -46,9 +47,25 @@
   gap: 12px;
 }
 
-.home-logo img {
-  height: 40px;
-  width: auto;
+.home-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.home-logo-wordmark {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.home-logo-tagline {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coinly-400);
 }
 
 .home-user {
@@ -141,8 +158,27 @@
   right: -15%;
   width: 360px;
   height: 360px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.35), transparent 65%);
+  background: radial-gradient(circle, rgba(108, 77, 255, 0.35), transparent 65%);
   pointer-events: none;
+}
+
+.balance-coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--coinly-yellow), #e6a800);
+  color: #1a1000;
+  box-shadow: 0 4px 14px rgba(255, 198, 51, 0.45);
+  flex-shrink: 0;
+}
+
+.balance-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .balance-header {
@@ -252,6 +288,9 @@
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 
 .home-card:hover {
@@ -277,6 +316,48 @@
   color: var(--text-muted);
   font-size: 15px;
   line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.home-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.home-card-icon--purple {
+  background: rgba(108, 77, 255, 0.18);
+  border: 1px solid rgba(108, 77, 255, 0.35);
+  color: var(--coinly-400);
+}
+
+.home-card-icon--yellow {
+  background: rgba(255, 198, 51, 0.15);
+  border: 1px solid rgba(255, 198, 51, 0.3);
+  color: #ffc633;
+}
+
+.home-card-icon--green {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.home-card-cta {
+  display: block;
+  margin-top: auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--coinly-400);
+  transition: color 0.2s ease;
+}
+
+.home-card:hover .home-card-cta {
+  color: #fff;
 }
 
 .btn-secondary {

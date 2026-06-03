@@ -2,7 +2,7 @@ spring:
   application:
     name: coinly-api
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/coinly}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/coinly}
     username: ${DB_USERNAME:coinly}
     password: ${DB_PASSWORD:coinly}
     driver-class-name: org.postgresql.Driver
