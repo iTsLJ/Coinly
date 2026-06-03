@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import { coinlyApi } from '../../lib/coinly'
 import './Vantagens.css'
 
@@ -185,7 +186,17 @@ function Vantagens() {
             </p>
 
             <div className="cupom-box">
-              <span className="cupom-label">Seu cupom</span>
+              <div className="cupom-qr">
+                <QRCodeSVG
+                  value={sucesso.cupom}
+                  size={140}
+                  bgColor="transparent"
+                  fgColor="#ffffff"
+                  level="M"
+                />
+              </div>
+              <div className="cupom-divider" />
+              <span className="cupom-label">Código do cupom</span>
               <span className="cupom-codigo">{sucesso.cupom}</span>
               <button className="cupom-copy" onClick={copiarCupom}>
                 {copiado ? 'Copiado ✓' : 'Copiar'}
