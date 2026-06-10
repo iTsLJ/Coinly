@@ -109,3 +109,42 @@ O aluno, após autenticado, acessa a área de vantagens para visualizar todas as
 **Fluxos alternativos:**
 
 *A1 — Nenhuma vantagem disponível:* No passo 3, se não houver vantagens cadastradas, o sistema informa que não há vantagens disponíveis no momento.
+
+---
+
+## UC-06 — Resgatar Vantagem (Aluno)
+
+**Ator principal:** Aluno
+
+O aluno, após autenticado, seleciona uma das vantagens disponíveis e solicita o resgate. O sistema valida se ele possui saldo suficiente, desconta o custo da vantagem do seu saldo, registra a transação como `RESGATE` e gera um código de cupom. O código retorna imediatamente na resposta e, de forma assíncrona, são enviados dois e-mails: um ao aluno (com o cupom) e outro à empresa parceira (para conferência da troca presencial). Ambos os e-mails contêm o mesmo código gerado pelo sistema.
+
+**Pré-condições:**
+
+- O aluno está autenticado no sistema.
+- Existe ao menos uma vantagem cadastrada e disponível.
+
+**Fluxo principal:**
+
+1. O aluno acessa a lista de vantagens disponíveis.
+2. O aluno seleciona a vantagem que deseja resgatar.
+3. O aluno confirma o resgate.
+4. O sistema verifica o saldo do aluno em relação ao custo da vantagem.
+5. O sistema desconta o custo da vantagem do saldo do aluno.
+6. O sistema gera um código de cupom único para a transação.
+7. O sistema registra a transação com tipo `RESGATE`, vinculando o código de cupom.
+8. O sistema retorna o código de cupom ao aluno na resposta da solicitação.
+9. O sistema atualiza o saldo do aluno em tempo real.
+10. O sistema envia, de forma assíncrona, um e-mail ao aluno contendo o cupom de resgate e o código.
+11. O sistema envia, de forma assíncrona, um e-mail à empresa parceira responsável pela vantagem, notificando o resgate e informando o mesmo código para conferência.
+
+**Fluxos alternativos:**
+
+*A1 — Saldo insuficiente:* No passo 4, caso o saldo do aluno seja menor que o custo da vantagem, o sistema cancela a operação e retorna a mensagem "Saldo insuficiente para resgate desta vantagem.", sem registrar transação nem descontar saldo.
+
+*A2 — Vantagem inexistente:* No passo 2, se a vantagem selecionada não for encontrada (por exemplo, removida pela empresa após a listagem), o sistema interrompe a operação e informa que a vantagem não está disponível.
+
+**Pós-condições:**
+
+- O saldo do aluno é reduzido no valor correspondente ao custo da vantagem.
+- Uma transação do tipo `RESGATE` é registrada com o código de cupom.
+- O aluno e a empresa parceira recebem e-mails com o código de conferência.
